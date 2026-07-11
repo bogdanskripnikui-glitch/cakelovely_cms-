@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CMS Cakes Sales</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./design-system/cardaq-system.css" />
+    <link rel="stylesheet" href="./sales.css" />
+  </head>
+  <body>
+    <main class="container app-shell">
+      <section class="app-screen is-active" id="salesScreen">
+        <div class="sales-sticky">
+          <header class="app-header">
+            <nav class="app-menu" aria-label="Разделы">
+              <a class="brand-mark" href="#" aria-label="CMS Cakes">
+                CMS
+                <small>Cakes</small>
+              </a>
+              <button class="nav-item app-view is-active" type="button" data-view="sales">Продажи</button>
+              <button class="nav-item app-view" type="button" data-view="stats">Статистика</button>
+            </nav>
+            <div class="revenue-badge">
+              <p class="price-number" id="todayRevenue">0</p>
+            </div>
+          </header>
+          <div class="category-tabs" aria-label="Категории товаров" id="categoryTabs"></div>
+        </div>
+        <div class="product-grid" id="productGrid"></div>
+      </section>
+
+      <section class="app-screen" id="statsScreen">
+        <div class="stats-sticky">
+          <header class="app-header">
+            <nav class="app-menu" aria-label="Разделы">
+              <a class="brand-mark" href="#" aria-label="CMS Cakes">
+                CMS
+                <small>Cakes</small>
+              </a>
+              <button class="nav-item app-view" type="button" data-view="sales">Продажи</button>
+              <button class="nav-item app-view" type="button" data-view="stats">Статистика</button>
+            </nav>
+            <div class="revenue-badge">
+              <p class="price-number" id="statsHeaderRevenue">0</p>
+            </div>
+          </header>
+        </div>
+        <div class="metrics-grid">
+          <article class="account-card metric-card">
+            <p class="price-label">Продано напитков</p>
+            <p class="price-number" id="drinksSold">0</p>
+          </article>
+          <article class="account-card metric-card">
+            <p class="price-label">Продано десертов</p>
+            <p class="price-number" id="dessertsSold">0</p>
+          </article>
+          <article class="account-card metric-card">
+            <p class="price-label">Выручка</p>
+            <p class="price-number" id="totalRevenue">0</p>
+          </article>
+        </div>
+
+        <article class="account-card chart-card">
+          <div class="card-row">
+            <h2 class="card-title">Продажи</h2>
+            <div class="nav-shell period-tabs" id="periodTabs">
+              <button class="nav-item period-button is-active" type="button" data-period="days">По дням</button>
+              <button class="nav-item period-button" type="button" data-period="months">По месяцам</button>
+            </div>
+          </div>
+          <div class="chart" id="salesChart" aria-label="График продаж"></div>
+        </article>
+
+        <article class="account-card sales-table-card">
+          <h2 class="card-title">Последние продажи</h2>
+          <div class="sales-table" id="recentSales"></div>
+        </article>
+      </section>
+    </main>
+
+    <dialog class="order-dialog" id="orderDialog">
+      <form class="order-card" method="dialog" id="orderForm">
+        <button class="button button-link close-button" type="button" id="closeDialog">Закрыть</button>
+        <div class="order-layout">
+          <section class="order-product">
+            <img class="order-image" id="orderImage" alt="" />
+            <h2 class="card-title" id="orderTitle"></h2>
+            <p class="card-text" id="orderPrice"></p>
+          </section>
+
+          <section class="order-controls">
+            <div class="payment-switch">
+              <button class="payment-button is-active" type="button" data-payment="cash">Наличка</button>
+              <button class="payment-button" type="button" data-payment="card">Карта</button>
+            </div>
+
+            <div class="quantity-row">
+              <button class="slider-dot quantity-button" type="button" id="minusQty">−</button>
+              <p class="price-number" id="quantityValue">1</p>
+              <button class="slider-dot quantity-button is-active" type="button" id="plusQty">+</button>
+            </div>
+
+            <label class="cash-field" id="cashField">
+              <span class="price-label">Получено наличными</span>
+              <input class="cash-input" id="cashInput" type="number" inputmode="decimal" min="0" step="1" />
+            </label>
+
+            <div class="totals-row">
+              <div class="order-total">
+                <p class="price-label">Сумма заказа</p>
+                <p class="price-number" id="orderTotal">0</p>
+              </div>
+              <div class="order-total" id="changeRow">
+                <p class="price-label">Сдача</p>
+                <p class="price-number" id="changeValue">0</p>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <button class="button button-primary button-large confirm-button" type="submit">Подтвердить заказ ›</button>
+      </form>
+    </dialog>
+
+    <script src="./sales.js"></script>
+  </body>
+</html>
