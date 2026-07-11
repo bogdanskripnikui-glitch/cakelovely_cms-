@@ -125,6 +125,21 @@
       </form>
     </dialog>
 
+    <dialog class="order-dialog top-up-dialog" id="topUpDialog">
+      <form class="order-card top-up-card" method="dialog" id="topUpForm">
+        <button class="button button-link close-button" type="button" id="closeTopUpDialog">Закрыть</button>
+        <div class="top-up-head">
+          <h2 class="card-title">Доплата</h2>
+          <p class="card-text">Заказ № <span id="topUpOrderNumber">0</span></p>
+        </div>
+        <label class="cash-field">
+          <span class="price-label">Сумма доплаты</span>
+          <input class="cash-input" id="topUpAmount" type="number" inputmode="decimal" min="0" step="1" />
+        </label>
+        <button class="button button-primary button-large confirm-button" type="submit">Подтвердить ›</button>
+      </form>
+    </dialog>
+
     <script src="./sales.js"></script>
   </body>
 </html>

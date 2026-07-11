@@ -145,10 +145,10 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 260px;
+  min-width: 220px;
   height: 61px;
   min-height: 61px;
-  padding: 0 var(--space-6);
+  padding: 0 var(--space-5);
   border-radius: 5px;
   background: linear-gradient(90deg, var(--color-pink) 0%, rgba(243, 138, 178, 0.4) 100%);
 }
@@ -185,8 +185,10 @@ body::before {
 }
 
 .category-tabs {
+  position: relative;
+  z-index: 2;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-7);
   margin-top: var(--space-8);
   margin-bottom: 0;
@@ -278,10 +280,7 @@ body::before {
   color: var(--color-ink);
   text-align: left;
   cursor: pointer;
-  opacity: var(--scroll-opacity, 1);
-  filter: blur(var(--scroll-blur, 0px));
-  transition: transform 180ms ease, opacity 100ms linear, filter 100ms linear;
-  will-change: opacity, filter;
+  transition: transform 180ms ease;
 }
 
 .product-card:hover {
@@ -450,6 +449,13 @@ body::before {
   margin: 0;
 }
 
+.sale-payment {
+  color: var(--color-slate);
+  font-size: 17.5px;
+  font-weight: 500;
+  letter-spacing: -0.35px;
+}
+
 .order-dialog {
   width: min(920px, calc(100% - 40px));
   max-height: calc(100vh - 40px);
@@ -469,6 +475,24 @@ body::before {
   padding: var(--space-7);
   border-radius: var(--radius-card);
   background: var(--color-surface);
+}
+
+.top-up-dialog {
+  width: min(520px, calc(100% - 40px));
+}
+
+.top-up-card {
+  gap: var(--space-6);
+}
+
+.top-up-head {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.top-up-head .card-title,
+.top-up-head .card-text {
+  margin: 0;
 }
 
 .close-button {

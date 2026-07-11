@@ -125,6 +125,20 @@ const categories = [
       },
     ],
   },
+  {
+    id: "top-up",
+    name: "Доплата",
+    icon: "plus",
+    type: "adjustment",
+    items: [
+      {
+        id: "top-up-item",
+        name: "Доплата",
+        price: 1,
+        image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=900&q=80",
+      },
+    ],
+  },
 ];
 
 const state = {
@@ -133,6 +147,7 @@ const state = {
   quantity: 1,
   payment: "cash",
   period: "days",
+  topUpOrderNumber: 1,
   sales: [
     saleSeed("Бабл ти", "drink", 2, 280, "card", 0),
     saleSeed("Лимонад", "drink", 1, 95, "cash", 1),
@@ -165,13 +180,17 @@ const els = {
   categoryTabs: document.querySelector("#categoryTabs"),
   productGrid: document.querySelector("#productGrid"),
   orderDialog: document.querySelector("#orderDialog"),
+  topUpDialog: document.querySelector("#topUpDialog"),
   orderForm: document.querySelector("#orderForm"),
+  topUpForm: document.querySelector("#topUpForm"),
   orderImage: document.querySelector("#orderImage"),
   orderTitle: document.querySelector("#orderTitle"),
   orderPrice: document.querySelector("#orderPrice"),
   quantityValue: document.querySelector("#quantityValue"),
   orderTotal: document.querySelector("#orderTotal"),
   cashInput: document.querySelector("#cashInput"),
+  topUpAmount: document.querySelector("#topUpAmount"),
+  topUpOrderNumber: document.querySelector("#topUpOrderNumber"),
   changeValue: document.querySelector("#changeValue"),
   changeRow: document.querySelector("#changeRow"),
   cashField: document.querySelector("#cashField"),
@@ -191,6 +210,15 @@ function currentCategory() {
 }
 
 function categoryIcon(kind) {
+  if (kind === "plus") {
+    return `
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M12 5v14" />
+        <path d="M5 12h14" />
+      </svg>
+    `;
+  }
+
   if (kind === "flame") {
     return `
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -237,6 +265,11 @@ function renderCategories() {
 }
 
 function renderProducts() {
+  if (currentCategory().id === "top-up") {
+    els.productGrid.innerHTML = "";
+    return;
+  }
+
   els.productGrid.innerHTML = currentCategory().items
     .map(
       (product) => `
@@ -250,7 +283,6 @@ function renderProducts() {
       `,
     )
     .join("");
-  updateProductFade();
 }
 
 function openOrder(product) {
@@ -264,6 +296,13 @@ function openOrder(product) {
   els.cashInput.value = "";
   renderOrder();
   els.orderDialog.showModal();
+}
+
+function openTopUp() {
+  state.topUpOrderNumber = state.sales.length + 1;
+  els.topUpOrderNumber.textContent = String(state.topUpOrderNumber);
+  els.topUpAmount.value = "";
+  els.topUpDialog.showModal();
 }
 
 function renderOrder() {
@@ -292,6 +331,23 @@ function confirmOrder() {
     date: new Date().toISOString(),
   });
   els.orderDialog.close();
+  renderStats();
+}
+
+function confirmTopUp() {
+  const amount = Number(els.topUpAmount.value || 0);
+  if (!amount) return;
+
+  state.sales.unshift({
+    id: crypto.randomUUID(),
+    name: `Доплата №${state.topUpOrderNumber}`,
+    type: "adjustment",
+    quantity: 1,
+    total: amount,
+    payment: "adjustment",
+    date: new Date().toISOString(),
+  });
+  els.topUpDialog.close();
   renderStats();
 }
 
@@ -385,6 +441,7 @@ function renderRecentSales() {
             <p class="card-title">${sale.name}</p>
             <p class="card-text">${new Date(sale.date).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</p>
           </div>
+          <p class="sale-payment">${sale.payment === "cash" ? "Наличка" : sale.payment === "card" ? "Карта" : "Доплата"}</p>
           <p class="price-label">${sale.quantity} шт.</p>
           <p class="product-price">${money.format(sale.total)}</p>
           <button class="button button-link" type="button" data-delete="${sale.id}">Удалить</button>
@@ -400,12 +457,17 @@ els.categoryTabs.addEventListener("click", (event) => {
   state.categoryId = button.dataset.category;
   renderCategories();
   renderProducts();
+  if (state.categoryId === "top-up") openTopUp();
 });
 
 els.productGrid.addEventListener("click", (event) => {
   const card = event.target.closest("[data-product]");
   if (!card) return;
   const product = currentCategory().items.find((item) => item.id === card.dataset.product);
+  if (currentCategory().id === "top-up") {
+    openTopUp();
+    return;
+  }
   openOrder(product);
 });
 
@@ -420,6 +482,7 @@ document.querySelector("#plusQty").addEventListener("click", () => {
 });
 
 document.querySelector("#closeDialog").addEventListener("click", () => els.orderDialog.close());
+document.querySelector("#closeTopUpDialog").addEventListener("click", () => els.topUpDialog.close());
 
 document.querySelectorAll(".payment-button").forEach((button) => {
   button.addEventListener("click", () => {
@@ -433,6 +496,11 @@ els.cashInput.addEventListener("input", renderOrder);
 els.orderForm.addEventListener("submit", (event) => {
   event.preventDefault();
   confirmOrder();
+});
+
+els.topUpForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  confirmTopUp();
 });
 
 document.querySelectorAll(".app-view").forEach((button) => {
@@ -454,37 +522,6 @@ els.recentSales.addEventListener("click", (event) => {
   renderStats();
 });
 
-let fadeFrame;
-function updateProductFade() {
-  const sticky = document.querySelector("#salesScreen .sales-sticky");
-  if (!sticky) return;
-  const fadeStart = sticky.getBoundingClientRect().bottom;
-  const fadeStartOffset = 40;
-  const fadeDistance = 160;
-  els.productGrid.querySelectorAll(".product-card").forEach((card) => {
-    const baseDistance = Number(card.dataset.fadeBase);
-    if (!Number.isFinite(baseDistance)) {
-      const initialDistance = card.getBoundingClientRect().top - fadeStart;
-      card.dataset.fadeBase = String(initialDistance);
-      card.style.setProperty("--scroll-opacity", "1");
-      card.style.setProperty("--scroll-blur", "0px");
-      return;
-    }
-
-    const distance = card.getBoundingClientRect().top - fadeStart;
-    const moved = baseDistance - distance;
-    const progress = Math.min(1, Math.max(0, (moved - fadeStartOffset) / fadeDistance));
-    card.style.setProperty("--scroll-opacity", String(1 - progress));
-    card.style.setProperty("--scroll-blur", `${progress * 10}px`);
-  });
-}
-
-window.addEventListener("scroll", () => {
-  cancelAnimationFrame(fadeFrame);
-  fadeFrame = requestAnimationFrame(updateProductFade);
-}, { passive: true });
-
 renderCategories();
 renderProducts();
 renderStats();
-updateProductFade();
