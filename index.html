@@ -11,6 +11,19 @@
     <link rel="stylesheet" href="./sales.css" />
   </head>
   <body>
+    <div class="platform-loader" id="platformLoader" role="status" aria-label="Загрузка платформы">
+      <div class="loader-logo" aria-hidden="true">
+        <svg class="loader-piece loader-piece-left" viewBox="0 0 860 669" preserveAspectRatio="xMidYMid meet">
+          <image href="./assets/logo.svg" width="2334" height="669" />
+        </svg>
+        <svg class="loader-piece loader-piece-mark" viewBox="850 0 628 669" preserveAspectRatio="xMidYMid meet">
+          <image href="./assets/logo.svg" width="2334" height="669" />
+        </svg>
+        <svg class="loader-piece loader-piece-right" viewBox="1478 0 856 669" preserveAspectRatio="xMidYMid meet">
+          <image href="./assets/logo.svg" width="2334" height="669" />
+        </svg>
+      </div>
+    </div>
     <main class="container app-shell">
       <section class="app-screen is-active" id="salesScreen">
         <div class="sales-sticky">
@@ -23,8 +36,29 @@
               <button class="nav-item app-view is-active" type="button" data-view="sales">Продажи</button>
               <button class="nav-item app-view" type="button" data-view="stats">Статистика</button>
             </nav>
-            <div class="revenue-badge">
-              <p class="price-number" id="todayRevenue">0</p>
+            <div class="header-metrics" aria-label="Показатели за сегодня">
+              <div class="header-count-card" title="Напитки сегодня">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M7 7h10l-1 12H8L7 7Z" />
+                  <path d="M6 4h12" />
+                  <path d="M12 4v3" />
+                  <path d="M15 4 18 1" />
+                </svg>
+                <span id="todayDrinks">0</span>
+              </div>
+              <div class="header-count-card" title="Десерты сегодня">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M8 10a4 4 0 0 1 8 0" />
+                  <path d="M7 13h10" />
+                  <path d="M8 13l1.2 5h5.6L16 13" />
+                  <path d="M9 18h6" />
+                  <path d="M10.5 7.5c0-1 .8-1.8 1.5-2.5.7.7 1.5 1.5 1.5 2.5" />
+                </svg>
+                <span id="todayDesserts">0</span>
+              </div>
+              <div class="revenue-badge">
+                <p class="price-number" id="todayRevenue">0</p>
+              </div>
             </div>
           </header>
           <div class="category-tabs" aria-label="Категории товаров" id="categoryTabs"></div>
@@ -43,22 +77,23 @@
               <button class="nav-item app-view" type="button" data-view="sales">Продажи</button>
               <button class="nav-item app-view" type="button" data-view="stats">Статистика</button>
             </nav>
-            <div class="revenue-badge">
-              <p class="price-number" id="statsHeaderRevenue">0</p>
-            </div>
           </header>
         </div>
         <div class="metrics-grid">
           <article class="account-card metric-card">
-            <p class="price-label">Продано напитков</p>
-            <p class="price-number" id="drinksSold">0</p>
-          </article>
-          <article class="account-card metric-card">
-            <p class="price-label">Продано десертов</p>
+            <p class="price-label" id="dessertsSoldLabel">Десерты сегодня</p>
             <p class="price-number" id="dessertsSold">0</p>
           </article>
           <article class="account-card metric-card">
-            <p class="price-label">Выручка</p>
+            <p class="price-label" id="drinksSoldLabel">Напитки сегодня</p>
+            <p class="price-number" id="drinksSold">0</p>
+          </article>
+          <article class="account-card metric-card">
+            <p class="price-label">Лучший продавец</p>
+            <p class="price-number best-seller-value" id="bestSeller">—</p>
+          </article>
+          <article class="account-card metric-card">
+            <p class="price-label" id="totalRevenueLabel">Выручка сегодня</p>
             <p class="price-number" id="totalRevenue">0</p>
           </article>
         </div>
@@ -83,12 +118,13 @@
 
     <dialog class="order-dialog" id="orderDialog">
       <form class="order-card" method="dialog" id="orderForm">
-        <button class="button button-link close-button" type="button" id="closeDialog">Закрыть</button>
+        <div class="order-head">
+          <h2 class="card-title" id="orderTitle"></h2>
+          <button class="button button-link close-button" type="button" id="closeDialog">Закрыть</button>
+        </div>
         <div class="order-layout">
           <section class="order-product">
             <img class="order-image" id="orderImage" alt="" />
-            <h2 class="card-title" id="orderTitle"></h2>
-            <p class="card-text" id="orderPrice"></p>
           </section>
 
           <section class="order-controls">
@@ -121,21 +157,39 @@
           </section>
         </div>
 
-        <button class="button button-primary button-large confirm-button" type="submit">Подтвердить заказ ›</button>
+        <div class="order-footer">
+          <div class="employee-field" id="employeePicker">
+            <button class="employee-trigger" id="employeeTrigger" type="button" aria-expanded="false" aria-controls="employeeOptions">
+              <span id="employeeValue">Имя сотрудника</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6" /></svg>
+            </button>
+            <div class="employee-options" id="employeeOptions" role="listbox" aria-label="Сотрудник">
+              <button type="button" role="option" data-employee="Анна">Анна</button>
+              <button type="button" role="option" data-employee="Мария">Мария</button>
+              <button type="button" role="option" data-employee="Олег">Олег</button>
+            </div>
+          </div>
+          <button class="button button-primary button-large confirm-button" type="submit">Подтвердить заказ ›</button>
+        </div>
       </form>
     </dialog>
 
     <dialog class="order-dialog top-up-dialog" id="topUpDialog">
       <form class="order-card top-up-card" method="dialog" id="topUpForm">
-        <button class="button button-link close-button" type="button" id="closeTopUpDialog">Закрыть</button>
         <div class="top-up-head">
           <h2 class="card-title">Доплата</h2>
-          <p class="card-text">Заказ № <span id="topUpOrderNumber">0</span></p>
+          <button class="button button-link close-button" type="button" id="closeTopUpDialog">Закрыть</button>
         </div>
-        <label class="cash-field">
-          <span class="price-label">Сумма доплаты</span>
-          <input class="cash-input" id="topUpAmount" type="number" inputmode="decimal" min="0" step="1" />
-        </label>
+        <div class="top-up-fields">
+          <label class="cash-field">
+            <span class="price-label">Номер заказа</span>
+            <input class="cash-input" id="topUpOrderNumber" type="text" inputmode="numeric" />
+          </label>
+          <label class="cash-field">
+            <span class="price-label">Сумма доплаты</span>
+            <input class="cash-input" id="topUpAmount" type="number" inputmode="decimal" min="0" step="1" required />
+          </label>
+        </div>
         <button class="button button-primary button-large confirm-button" type="submit">Подтвердить ›</button>
       </form>
     </dialog>
