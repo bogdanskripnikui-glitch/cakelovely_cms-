@@ -265,11 +265,6 @@ function renderCategories() {
 }
 
 function renderProducts() {
-  if (currentCategory().id === "top-up") {
-    els.productGrid.innerHTML = "";
-    return;
-  }
-
   els.productGrid.innerHTML = currentCategory().items
     .map(
       (product) => `
@@ -454,20 +449,19 @@ function renderRecentSales() {
 els.categoryTabs.addEventListener("click", (event) => {
   const button = event.target.closest("[data-category]");
   if (!button) return;
+  if (button.dataset.category === "top-up") {
+    openTopUp();
+    return;
+  }
   state.categoryId = button.dataset.category;
   renderCategories();
   renderProducts();
-  if (state.categoryId === "top-up") openTopUp();
 });
 
 els.productGrid.addEventListener("click", (event) => {
   const card = event.target.closest("[data-product]");
   if (!card) return;
   const product = currentCategory().items.find((item) => item.id === card.dataset.product);
-  if (currentCategory().id === "top-up") {
-    openTopUp();
-    return;
-  }
   openOrder(product);
 });
 
