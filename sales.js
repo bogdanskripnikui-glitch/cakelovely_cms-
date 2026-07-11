@@ -146,13 +146,13 @@ const state = {
   product: null,
   quantity: 1,
   payment: "cash",
+  employee: "",
   period: "days",
-  topUpOrderNumber: 1,
   sales: [
-    saleSeed("Бабл ти", "drink", 2, 280, "card", 0),
-    saleSeed("Лимонад", "drink", 1, 95, "cash", 1),
-    saleSeed("Чизкейк", "dessert", 1, 130, "card", 2),
-    saleSeed("Капучино", "drink", 3, 330, "cash", 3),
+    saleSeed("Бабл ти", "drink", 2, 280, "card", 0, "Анна"),
+    saleSeed("Лимонад", "drink", 1, 95, "cash", 1, "Мария"),
+    saleSeed("Чизкейк", "dessert", 1, 130, "card", 2, "Олег"),
+    saleSeed("Капучино", "drink", 3, 330, "cash", 3, "Анна"),
   ],
 };
 
@@ -162,7 +162,7 @@ const money = new Intl.NumberFormat("ru-RU", {
   maximumFractionDigits: 0,
 });
 
-function saleSeed(name, type, quantity, total, payment, daysAgo) {
+function saleSeed(name, type, quantity, total, payment, daysAgo, employee) {
   const date = new Date();
   date.setDate(date.getDate() - daysAgo);
   return {
@@ -172,11 +172,14 @@ function saleSeed(name, type, quantity, total, payment, daysAgo) {
     quantity,
     total,
     payment,
+    employee,
     date: date.toISOString(),
   };
 }
 
 const els = {
+  platformLoader: document.querySelector("#platformLoader"),
+  appShell: document.querySelector(".app-shell"),
   categoryTabs: document.querySelector("#categoryTabs"),
   productGrid: document.querySelector("#productGrid"),
   orderDialog: document.querySelector("#orderDialog"),
@@ -185,10 +188,12 @@ const els = {
   topUpForm: document.querySelector("#topUpForm"),
   orderImage: document.querySelector("#orderImage"),
   orderTitle: document.querySelector("#orderTitle"),
-  orderPrice: document.querySelector("#orderPrice"),
   quantityValue: document.querySelector("#quantityValue"),
   orderTotal: document.querySelector("#orderTotal"),
   cashInput: document.querySelector("#cashInput"),
+  employeePicker: document.querySelector("#employeePicker"),
+  employeeTrigger: document.querySelector("#employeeTrigger"),
+  employeeValue: document.querySelector("#employeeValue"),
   topUpAmount: document.querySelector("#topUpAmount"),
   topUpOrderNumber: document.querySelector("#topUpOrderNumber"),
   changeValue: document.querySelector("#changeValue"),
@@ -197,10 +202,15 @@ const els = {
   salesScreen: document.querySelector("#salesScreen"),
   statsScreen: document.querySelector("#statsScreen"),
   drinksSold: document.querySelector("#drinksSold"),
+  drinksSoldLabel: document.querySelector("#drinksSoldLabel"),
   dessertsSold: document.querySelector("#dessertsSold"),
+  dessertsSoldLabel: document.querySelector("#dessertsSoldLabel"),
   totalRevenue: document.querySelector("#totalRevenue"),
+  totalRevenueLabel: document.querySelector("#totalRevenueLabel"),
+  bestSeller: document.querySelector("#bestSeller"),
   todayRevenue: document.querySelector("#todayRevenue"),
-  statsHeaderRevenue: document.querySelector("#statsHeaderRevenue"),
+  todayDrinks: document.querySelector("#todayDrinks"),
+  todayDesserts: document.querySelector("#todayDesserts"),
   salesChart: document.querySelector("#salesChart"),
   recentSales: document.querySelector("#recentSales"),
 };
@@ -287,15 +297,17 @@ function openOrder(product) {
   els.orderImage.src = product.image;
   els.orderImage.alt = product.name;
   els.orderTitle.textContent = product.name;
-  els.orderPrice.textContent = `${money.format(product.price)} за единицу`;
   els.cashInput.value = "";
+  state.employee = "";
+  els.employeeValue.textContent = "Имя сотрудника";
+  els.employeePicker.classList.remove("is-open");
+  els.employeeTrigger.setAttribute("aria-expanded", "false");
   renderOrder();
   els.orderDialog.showModal();
 }
 
 function openTopUp() {
-  state.topUpOrderNumber = state.sales.length + 1;
-  els.topUpOrderNumber.textContent = String(state.topUpOrderNumber);
+  els.topUpOrderNumber.value = "";
   els.topUpAmount.value = "";
   els.topUpDialog.showModal();
 }
@@ -308,6 +320,7 @@ function renderOrder() {
     button.classList.toggle("is-active", button.dataset.payment === state.payment);
   });
   const isCash = state.payment === "cash";
+  els.orderForm.classList.toggle("is-card-payment", !isCash);
   els.cashField.classList.toggle("is-hidden", !isCash);
   els.changeRow.classList.toggle("is-hidden", !isCash);
   const cash = Number(els.cashInput.value || 0);
@@ -323,6 +336,7 @@ function confirmOrder() {
     quantity: state.quantity,
     total,
     payment: state.payment,
+    employee: state.employee,
     date: new Date().toISOString(),
   });
   els.orderDialog.close();
@@ -332,14 +346,16 @@ function confirmOrder() {
 function confirmTopUp() {
   const amount = Number(els.topUpAmount.value || 0);
   if (!amount) return;
+  const orderNumber = els.topUpOrderNumber.value.trim();
 
   state.sales.unshift({
     id: crypto.randomUUID(),
-    name: `Доплата №${state.topUpOrderNumber}`,
+    name: "Доплата",
     type: "adjustment",
     quantity: 1,
     total: amount,
     payment: "adjustment",
+    orderNumber,
     date: new Date().toISOString(),
   });
   els.topUpDialog.close();
@@ -355,23 +371,51 @@ function switchView(view) {
   if (view === "stats") renderStats();
 }
 
+function updateSalesStickyState() {
+  const isScrolled = window.scrollY > 4;
+  document.querySelector(".sales-sticky").classList.toggle("is-scrolled", isScrolled);
+  document.querySelector(".stats-sticky").classList.toggle("is-scrolled", isScrolled);
+}
+
 function renderStats() {
-  const drinks = state.sales.filter((sale) => sale.type === "drink").reduce((sum, sale) => sum + sale.quantity, 0);
-  const desserts = state.sales.filter((sale) => sale.type === "dessert").reduce((sum, sale) => sum + sale.quantity, 0);
-  const revenue = state.sales.reduce((sum, sale) => sum + sale.total, 0);
   const today = new Date();
   const todayKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
-  const todayRevenue = state.sales
+  const isDailyPeriod = state.period === "days";
+  const periodSales = state.sales.filter((sale) => {
+    const saleDate = new Date(sale.date);
+    if (isDailyPeriod) return `${saleDate.getFullYear()}-${saleDate.getMonth()}-${saleDate.getDate()}` === todayKey;
+    return saleDate.getMonth() === today.getMonth() && saleDate.getFullYear() === today.getFullYear();
+  });
+  const drinks = periodSales.filter((sale) => sale.type === "drink").reduce((sum, sale) => sum + sale.quantity, 0);
+  const desserts = periodSales.filter((sale) => sale.type === "dessert").reduce((sum, sale) => sum + sale.quantity, 0);
+  const todaySales = state.sales.filter((sale) => {
+    const saleDate = new Date(sale.date);
+    return `${saleDate.getFullYear()}-${saleDate.getMonth()}-${saleDate.getDate()}` === todayKey;
+  });
+  const todayRevenue = todaySales.reduce((sum, sale) => sum + sale.total, 0);
+  const monthRevenue = state.sales
     .filter((sale) => {
       const saleDate = new Date(sale.date);
-      return `${saleDate.getFullYear()}-${saleDate.getMonth()}-${saleDate.getDate()}` === todayKey;
+      return saleDate.getMonth() === today.getMonth() && saleDate.getFullYear() === today.getFullYear();
     })
     .reduce((sum, sale) => sum + sale.total, 0);
+  const monthNames = ["январе", "феврале", "марте", "апреле", "мае", "июне", "июле", "августе", "сентябре", "октябре", "ноябре", "декабре"];
+  const periodLabel = isDailyPeriod ? "сегодня" : `в ${monthNames[today.getMonth()]}`;
+  const sellerTotals = state.sales.reduce((totals, sale) => {
+    if (sale.employee) totals[sale.employee] = (totals[sale.employee] || 0) + sale.total;
+    return totals;
+  }, {});
+  const bestSeller = Object.entries(sellerTotals).sort(([, firstTotal], [, secondTotal]) => secondTotal - firstTotal)[0]?.[0] || "—";
   els.drinksSold.textContent = drinks;
   els.dessertsSold.textContent = desserts;
-  els.totalRevenue.textContent = money.format(revenue);
+  els.drinksSoldLabel.textContent = `Напитки ${periodLabel}`;
+  els.dessertsSoldLabel.textContent = `Десерты ${periodLabel}`;
+  els.totalRevenueLabel.textContent = `Выручка ${periodLabel}`;
+  els.totalRevenue.textContent = money.format(isDailyPeriod ? todayRevenue : monthRevenue);
+  els.bestSeller.textContent = bestSeller;
   els.todayRevenue.textContent = money.format(todayRevenue);
-  els.statsHeaderRevenue.textContent = money.format(todayRevenue);
+  els.todayDrinks.textContent = todaySales.filter((sale) => sale.type === "drink").reduce((sum, sale) => sum + sale.quantity, 0);
+  els.todayDesserts.textContent = todaySales.filter((sale) => sale.type === "dessert").reduce((sum, sale) => sum + sale.quantity, 0);
   renderChart();
   renderRecentSales();
 }
@@ -436,7 +480,10 @@ function renderRecentSales() {
             <p class="card-title">${sale.name}</p>
             <p class="card-text">${new Date(sale.date).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</p>
           </div>
-          <p class="sale-payment">${sale.payment === "cash" ? "Наличка" : sale.payment === "card" ? "Карта" : "Доплата"}</p>
+          <p class="price-label sale-type">${sale.type === "adjustment" ? "Доплата" : "Продажа"}</p>
+          <p class="sale-payment">${sale.type === "adjustment" ? "—" : sale.payment === "cash" ? "Наличка" : "Карта"}</p>
+          <p class="price-label sale-employee">${sale.employee || "—"}</p>
+          <p class="price-label sale-order">${sale.type === "adjustment" ? sale.orderNumber || "—" : "—"}</p>
           <p class="price-label">${sale.quantity} шт.</p>
           <p class="product-price">${money.format(sale.total)}</p>
           <button class="button button-link" type="button" data-delete="${sale.id}">Удалить</button>
@@ -478,6 +525,12 @@ document.querySelector("#plusQty").addEventListener("click", () => {
 document.querySelector("#closeDialog").addEventListener("click", () => els.orderDialog.close());
 document.querySelector("#closeTopUpDialog").addEventListener("click", () => els.topUpDialog.close());
 
+[els.orderDialog, els.topUpDialog].forEach((dialog) => {
+  dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+});
+
 document.querySelectorAll(".payment-button").forEach((button) => {
   button.addEventListener("click", () => {
     state.payment = button.dataset.payment;
@@ -486,6 +539,26 @@ document.querySelectorAll(".payment-button").forEach((button) => {
 });
 
 els.cashInput.addEventListener("input", renderOrder);
+
+els.employeeTrigger.addEventListener("click", () => {
+  const isOpen = els.employeePicker.classList.toggle("is-open");
+  els.employeeTrigger.setAttribute("aria-expanded", String(isOpen));
+});
+
+els.employeePicker.addEventListener("click", (event) => {
+  const option = event.target.closest("[data-employee]");
+  if (!option) return;
+  state.employee = option.dataset.employee;
+  els.employeeValue.textContent = state.employee;
+  els.employeePicker.classList.remove("is-open");
+  els.employeeTrigger.setAttribute("aria-expanded", "false");
+});
+
+document.addEventListener("click", (event) => {
+  if (els.employeePicker.contains(event.target)) return;
+  els.employeePicker.classList.remove("is-open");
+  els.employeeTrigger.setAttribute("aria-expanded", "false");
+});
 
 els.orderForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -502,12 +575,14 @@ document.querySelectorAll(".app-view").forEach((button) => {
 });
 
 document.querySelectorAll(".period-button").forEach((button) => {
-  button.addEventListener("click", () => {
-    state.period = button.dataset.period;
-    document.querySelectorAll(".period-button").forEach((item) => item.classList.toggle("is-active", item === button));
-    renderChart();
-  });
+    button.addEventListener("click", () => {
+      state.period = button.dataset.period;
+      document.querySelectorAll(".period-button").forEach((item) => item.classList.toggle("is-active", item === button));
+      renderStats();
+    });
 });
+
+window.addEventListener("scroll", updateSalesStickyState, { passive: true });
 
 els.recentSales.addEventListener("click", (event) => {
   const button = event.target.closest("[data-delete]");
@@ -519,3 +594,9 @@ els.recentSales.addEventListener("click", (event) => {
 renderCategories();
 renderProducts();
 renderStats();
+updateSalesStickyState();
+
+window.setTimeout(() => {
+  els.platformLoader.classList.add("is-hidden");
+  els.appShell.classList.add("is-ready");
+}, 2500);
