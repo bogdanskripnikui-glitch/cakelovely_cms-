@@ -162,6 +162,23 @@ const money = new Intl.NumberFormat("ru-RU", {
   maximumFractionDigits: 0,
 });
 
+async function requestCheckout(payload) {
+  const response = await fetch("/api/checkout", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(result.error || "Checkout request failed");
+  }
+
+  return result.sale;
+}
+
 function saleSeed(name, type, quantity, total, payment, daysAgo, employee) {
   const date = new Date();
   date.setDate(date.getDate() - daysAgo);
@@ -327,10 +344,9 @@ function renderOrder() {
   els.changeValue.textContent = money.format(Math.max(0, cash - total));
 }
 
-function confirmOrder() {
+async function confirmOrder() {
   const total = state.product.price * state.quantity;
-  state.sales.unshift({
-    id: crypto.randomUUID(),
+  const sale = await requestCheckout({
     name: state.product.name,
     type: currentCategory().type,
     quantity: state.quantity,
@@ -339,24 +355,45 @@ function confirmOrder() {
     employee: state.employee,
     date: new Date().toISOString(),
   });
+  state.sales.unshift({
+    id: sale.id || crypto.randomUUID(),
+    name: sale.name,
+    type: sale.type,
+    quantity: sale.quantity,
+    total: sale.total,
+    payment: sale.payment,
+    employee: sale.employee,
+    date: sale.date,
+  });
   els.orderDialog.close();
   renderStats();
 }
 
-function confirmTopUp() {
+async function confirmTopUp() {
   const amount = Number(els.topUpAmount.value || 0);
   if (!amount) return;
   const orderNumber = els.topUpOrderNumber.value.trim();
 
-  state.sales.unshift({
-    id: crypto.randomUUID(),
+  const sale = await requestCheckout({
     name: "Доплата",
     type: "adjustment",
     quantity: 1,
     total: amount,
     payment: "adjustment",
+    employee: "",
     orderNumber,
     date: new Date().toISOString(),
+  });
+  state.sales.unshift({
+    id: sale.id || crypto.randomUUID(),
+    name: sale.name,
+    type: sale.type,
+    quantity: sale.quantity,
+    total: sale.total,
+    payment: sale.payment,
+    employee: sale.employee,
+    orderNumber: sale.orderNumber,
+    date: sale.date,
   });
   els.topUpDialog.close();
   renderStats();
@@ -562,12 +599,16 @@ document.addEventListener("click", (event) => {
 
 els.orderForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  confirmOrder();
+  confirmOrder().catch((error) => {
+    window.alert(`Ошибка оформления: ${error.message}`);
+  });
 });
 
 els.topUpForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  confirmTopUp();
+  confirmTopUp().catch((error) => {
+    window.alert(`Ошибка доплаты: ${error.message}`);
+  });
 });
 
 document.querySelectorAll(".app-view").forEach((button) => {

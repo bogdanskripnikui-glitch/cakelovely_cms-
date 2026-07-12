@@ -1,0 +1,12 @@
+{
+  "name": "cms-cakes",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "check": "node --check sales.js && node --check api/checkout.js && node --check lib/supabase.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.53.0"
+  }
+}
