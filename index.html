@@ -1,43 +1,61 @@
 <!doctype html>
-<html lang="ru">
+<html lang="uk">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>CMS Cakes Sales</title>
+    <title>Cake Lovely — Продажі</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./design-system/cardaq-system.css" />
     <link rel="stylesheet" href="./sales.css" />
   </head>
   <body>
-    <div class="platform-loader" id="platformLoader" role="status" aria-label="Загрузка платформы">
-      <div class="loader-logo" aria-hidden="true">
-        <svg class="loader-piece loader-piece-left" viewBox="0 0 860 669" preserveAspectRatio="xMidYMid meet">
-          <image href="./assets/logo.svg" width="2334" height="669" />
-        </svg>
-        <svg class="loader-piece loader-piece-mark" viewBox="850 0 628 669" preserveAspectRatio="xMidYMid meet">
-          <image href="./assets/logo.svg" width="2334" height="669" />
-        </svg>
-        <svg class="loader-piece loader-piece-right" viewBox="1478 0 856 669" preserveAspectRatio="xMidYMid meet">
-          <image href="./assets/logo.svg" width="2334" height="669" />
-        </svg>
+    <div class="platform-loader" id="platformLoader" aria-label="Вибір міста">
+      <div class="loader-content">
+        <div class="loader-logo-stage">
+          <div class="loader-logo" aria-hidden="true">
+            <svg class="loader-piece loader-piece-left" viewBox="0 0 860 669" preserveAspectRatio="xMidYMid meet">
+              <image href="./assets/logo.svg" width="2334" height="669" />
+            </svg>
+            <svg class="loader-piece loader-piece-mark" viewBox="850 0 628 669" preserveAspectRatio="xMidYMid meet">
+              <image href="./assets/logo.svg" width="2334" height="669" />
+            </svg>
+            <svg class="loader-piece loader-piece-right" viewBox="1478 0 856 669" preserveAspectRatio="xMidYMid meet">
+              <image href="./assets/logo.svg" width="2334" height="669" />
+            </svg>
+          </div>
+        </div>
+        <section class="city-picker" id="cityPicker" aria-label="Оберіть місто">
+          <div class="city-grid">
+            <button class="city-card" type="button" data-city="kharkiv">
+              <img src="./IMG/CityKharkiv.png" alt="Харків" />
+              <span>Харків</span>
+            </button>
+            <button class="city-card" type="button" data-city="lutsk">
+              <img src="./IMG/CityLutsk.png" alt="Луцьк" />
+              <span>Луцьк</span>
+            </button>
+          </div>
+        </section>
       </div>
     </div>
-    <main class="container app-shell">
+    <main class="container app-shell" aria-hidden="true">
       <section class="app-screen is-active" id="salesScreen">
         <div class="sales-sticky">
           <header class="app-header">
-            <nav class="app-menu" aria-label="Разделы">
-              <a class="brand-mark" href="#" aria-label="CMS Cakes">
-                CMS
-                <small>Cakes</small>
-              </a>
-              <button class="nav-item app-view is-active" type="button" data-view="sales">Продажи</button>
+            <nav class="app-menu" aria-label="Розділи">
+              <button class="mobile-menu-toggle" type="button" aria-label="Відкрити меню" aria-expanded="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+              </button>
+              <button class="branch-exit" type="button" data-logout aria-label="Вийти й обрати інше місто" title="Обрати інше місто">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4" /><path d="M14 8l4 4-4 4" /><path d="M18 12H9" /></svg>
+              </button>
+              <button class="nav-item app-view is-active" type="button" data-view="sales">Продажі</button>
               <button class="nav-item app-view" type="button" data-view="stats">Статистика</button>
             </nav>
-            <div class="header-metrics" aria-label="Показатели за сегодня">
-              <div class="header-count-card" title="Напитки сегодня">
+            <div class="header-metrics" aria-label="Показники за сьогодні">
+              <div class="header-count-card" title="Напої сьогодні">
                 <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                   <path d="M7 7h10l-1 12H8L7 7Z" />
                   <path d="M6 4h12" />
@@ -46,7 +64,7 @@
                 </svg>
                 <span id="todayDrinks">0</span>
               </div>
-              <div class="header-count-card" title="Десерты сегодня">
+              <div class="header-count-card" title="Десерти сьогодні">
                 <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                   <path d="M8 10a4 4 0 0 1 8 0" />
                   <path d="M7 13h10" />
@@ -61,7 +79,7 @@
               </div>
             </div>
           </header>
-          <div class="category-tabs" aria-label="Категории товаров" id="categoryTabs"></div>
+          <div class="category-tabs" aria-label="Категорії товарів" id="categoryTabs"></div>
         </div>
         <div class="product-grid" id="productGrid"></div>
       </section>
@@ -69,48 +87,50 @@
       <section class="app-screen" id="statsScreen">
         <div class="stats-sticky">
           <header class="app-header">
-            <nav class="app-menu" aria-label="Разделы">
-              <a class="brand-mark" href="#" aria-label="CMS Cakes">
-                CMS
-                <small>Cakes</small>
-              </a>
-              <button class="nav-item app-view" type="button" data-view="sales">Продажи</button>
+            <nav class="app-menu" aria-label="Розділи">
+              <button class="mobile-menu-toggle" type="button" aria-label="Відкрити меню" aria-expanded="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+              </button>
+              <button class="branch-exit" type="button" data-logout aria-label="Вийти й обрати інше місто" title="Обрати інше місто">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4" /><path d="M14 8l4 4-4 4" /><path d="M18 12H9" /></svg>
+              </button>
+              <button class="nav-item app-view" type="button" data-view="sales">Продажі</button>
               <button class="nav-item app-view" type="button" data-view="stats">Статистика</button>
             </nav>
           </header>
         </div>
         <div class="metrics-grid">
           <article class="account-card metric-card">
-            <p class="price-label" id="dessertsSoldLabel">Десерты сегодня</p>
+            <p class="price-label" id="dessertsSoldLabel">Десерти сьогодні</p>
             <p class="price-number" id="dessertsSold">0</p>
           </article>
           <article class="account-card metric-card">
-            <p class="price-label" id="drinksSoldLabel">Напитки сегодня</p>
+            <p class="price-label" id="drinksSoldLabel">Напої сьогодні</p>
             <p class="price-number" id="drinksSold">0</p>
           </article>
           <article class="account-card metric-card">
-            <p class="price-label">Лучший продавец</p>
+            <p class="price-label">Найкращий продавець</p>
             <p class="price-number best-seller-value" id="bestSeller">—</p>
           </article>
           <article class="account-card metric-card">
-            <p class="price-label" id="totalRevenueLabel">Выручка сегодня</p>
+            <p class="price-label" id="totalRevenueLabel">Виручка сьогодні</p>
             <p class="price-number" id="totalRevenue">0</p>
           </article>
         </div>
 
         <article class="account-card chart-card">
           <div class="card-row">
-            <h2 class="card-title">Продажи</h2>
+            <h2 class="card-title">Продажі</h2>
             <div class="nav-shell period-tabs" id="periodTabs">
-              <button class="nav-item period-button is-active" type="button" data-period="days">По дням</button>
-              <button class="nav-item period-button" type="button" data-period="months">По месяцам</button>
+              <button class="nav-item period-button is-active" type="button" data-period="days">За днями</button>
+              <button class="nav-item period-button" type="button" data-period="months">За місяцями</button>
             </div>
           </div>
-          <div class="chart" id="salesChart" aria-label="График продаж"></div>
+          <div class="chart" id="salesChart" aria-label="Графік продажів"></div>
         </article>
 
         <article class="account-card sales-table-card">
-          <h2 class="card-title">Последние продажи</h2>
+          <h2 class="card-title">Останні продажі</h2>
           <div class="sales-table" id="recentSales"></div>
         </article>
       </section>
@@ -119,38 +139,36 @@
     <dialog class="order-dialog" id="orderDialog">
       <form class="order-card" method="dialog" id="orderForm">
         <div class="order-head">
-          <h2 class="card-title" id="orderTitle"></h2>
-          <button class="button button-link close-button" type="button" id="closeDialog">Закрыть</button>
+          <div class="order-head-copy">
+            <h2 class="card-title" id="orderTitle">Новий чек</h2>
+            <p class="card-text order-meta" id="orderMeta">0 позицій</p>
+          </div>
+          <button class="button button-link close-button" type="button" id="closeDialog">Закрити</button>
         </div>
         <div class="order-layout">
           <section class="order-product">
-            <img class="order-image" id="orderImage" alt="" />
+            <div class="draft-items" id="draftItems"></div>
+            <button class="button button-link add-more-button" type="button" id="addMoreItems">+ Додати ще</button>
           </section>
 
           <section class="order-controls">
             <div class="payment-switch">
-              <button class="payment-button is-active" type="button" data-payment="cash">Наличка</button>
-              <button class="payment-button" type="button" data-payment="card">Карта</button>
-            </div>
-
-            <div class="quantity-row">
-              <button class="slider-dot quantity-button" type="button" id="minusQty">−</button>
-              <p class="price-number" id="quantityValue">1</p>
-              <button class="slider-dot quantity-button is-active" type="button" id="plusQty">+</button>
+              <button class="payment-button is-active" type="button" data-payment="cash">Готівка</button>
+              <button class="payment-button" type="button" data-payment="card">Картка</button>
             </div>
 
             <label class="cash-field" id="cashField">
-              <span class="price-label">Получено наличными</span>
+              <span class="price-label">Отримано готівкою</span>
               <input class="cash-input" id="cashInput" type="number" inputmode="decimal" min="0" step="1" />
             </label>
 
             <div class="totals-row">
               <div class="order-total">
-                <p class="price-label">Сумма заказа</p>
+                <p class="price-label">Сума замовлення</p>
                 <p class="price-number" id="orderTotal">0</p>
               </div>
               <div class="order-total" id="changeRow">
-                <p class="price-label">Сдача</p>
+                <p class="price-label">Решта</p>
                 <p class="price-number" id="changeValue">0</p>
               </div>
             </div>
@@ -158,18 +176,15 @@
         </div>
 
         <div class="order-footer">
+          <button class="cancel-order-button is-hidden" type="button" id="cancelOrder">Скасувати замовлення</button>
           <div class="employee-field" id="employeePicker">
             <button class="employee-trigger" id="employeeTrigger" type="button" aria-expanded="false" aria-controls="employeeOptions">
-              <span id="employeeValue">Имя сотрудника</span>
+              <span id="employeeValue">Ім’я співробітника</span>
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6" /></svg>
             </button>
-            <div class="employee-options" id="employeeOptions" role="listbox" aria-label="Сотрудник">
-              <button type="button" role="option" data-employee="Анна">Анна</button>
-              <button type="button" role="option" data-employee="Мария">Мария</button>
-              <button type="button" role="option" data-employee="Олег">Олег</button>
-            </div>
+            <div class="employee-options" id="employeeOptions" role="listbox" aria-label="Співробітник"></div>
           </div>
-          <button class="button button-primary button-large confirm-button" type="submit">Подтвердить заказ ›</button>
+          <button class="button button-primary button-large confirm-button" type="submit">Підтвердити замовлення ›</button>
         </div>
       </form>
     </dialog>
@@ -178,19 +193,19 @@
       <form class="order-card top-up-card" method="dialog" id="topUpForm">
         <div class="top-up-head">
           <h2 class="card-title">Доплата</h2>
-          <button class="button button-link close-button" type="button" id="closeTopUpDialog">Закрыть</button>
+          <button class="button button-link close-button" type="button" id="closeTopUpDialog">Закрити</button>
         </div>
         <div class="top-up-fields">
           <label class="cash-field">
-            <span class="price-label">Номер заказа</span>
+            <span class="price-label">Номер замовлення</span>
             <input class="cash-input" id="topUpOrderNumber" type="text" inputmode="numeric" />
           </label>
           <label class="cash-field">
-            <span class="price-label">Сумма доплаты</span>
+            <span class="price-label">Сума доплати</span>
             <input class="cash-input" id="topUpAmount" type="number" inputmode="decimal" min="0" step="1" required />
           </label>
         </div>
-        <button class="button button-primary button-large confirm-button" type="submit">Подтвердить ›</button>
+        <button class="button button-primary button-large confirm-button" type="submit">Підтвердити ›</button>
       </form>
     </dialog>
 

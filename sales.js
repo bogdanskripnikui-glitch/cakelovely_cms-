@@ -1,127 +1,316 @@
 const categories = [
   {
     id: "cold",
-    name: "Холодные напитки",
+    name: "Холодні напої",
     icon: "snowflake",
     type: "drink",
     items: [
       {
         id: "bubble-tea",
-        name: "Бабл ти",
-        price: 140,
-        image: "https://images.unsplash.com/photo-1558857563-b371033873b8?auto=format&fit=crop&w=900&q=80",
+        name: "Bubble Tea",
+        price: 100,
+        group: "bubble-tea",
+        image: "IMG/BubbleTea.png",
+      },
+      {
+        id: "bubble-tea-double",
+        name: "Bubble Tea x2",
+        price: 200,
+        group: "bubble-tea",
+        isDouble: true,
+        image: "IMG/BubbleTea.png",
       },
       {
         id: "lemonade",
         name: "Лимонад",
-        price: 95,
-        image: "https://images.unsplash.com/photo-1621263764928-df1444c5e859?auto=format&fit=crop&w=900&q=80",
+        price: 80,
+        group: "lemonade",
+        image: "IMG/Лимонад.png",
       },
       {
-        id: "iced-coffee",
-        name: "Холодный кофе",
-        price: 120,
-        image: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=900&q=80",
+        id: "lemonade-double",
+        name: "Лимонад x2",
+        price: 180,
+        group: "lemonade",
+        isDouble: true,
+        image: "IMG/Лимонад.png",
       },
       {
-        id: "iced-matcha",
-        name: "Айс матча",
-        price: 135,
-        image: "https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=900&q=80",
+        id: "iced-latte",
+        name: "Iced Latte",
+        price: 90,
+        image: "IMG/IceCoffee.png",
       },
       {
-        id: "orange-fresh",
-        name: "Апельсиновый фреш",
-        price: 125,
-        image: "https://images.unsplash.com/photo-1600271886742-f049cd451bba?auto=format&fit=crop&w=900&q=80",
+        id: "orange-coffee",
+        name: "Orange Coffee",
+        price: 90,
+        image: "IMG/OrangeCoffee.png",
       },
       {
-        id: "milkshake",
-        name: "Милкшейк",
-        price: 145,
-        image: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=900&q=80",
+        id: "espresso-tonic",
+        name: "Espresso Tonic",
+        price: 90,
+        image: "IMG/EspressoTonic.png",
       },
       {
-        id: "cold-cocoa",
-        name: "Холодное какао",
-        price: 115,
-        image: "https://images.unsplash.com/photo-1577805947697-89e18249d767?auto=format&fit=crop&w=900&q=80",
-      },
-      {
-        id: "berry-ice-tea",
-        name: "Ягодный айс ти",
-        price: 105,
-        image: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=900&q=80",
-      },
-      {
-        id: "mojito",
-        name: "Мохито",
-        price: 110,
-        image: "https://images.unsplash.com/photo-1551538827-9c037cb4f32a?auto=format&fit=crop&w=900&q=80",
-      },
-      {
-        id: "smoothie",
-        name: "Смузи",
-        price: 150,
-        image: "https://images.unsplash.com/photo-1505252585461-04db1eb84625?auto=format&fit=crop&w=900&q=80",
-      },
-      {
-        id: "tonic-espresso",
-        name: "Эспрессо тоник",
-        price: 140,
-        image: "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&w=900&q=80",
+        id: "double-coffee",
+        name: "Кава x2",
+        price: 190,
+        isDouble: true,
+        image: "IMG/IceCoffee.png",
       },
     ],
   },
   {
     id: "hot",
-    name: "Горячие напитки",
+    name: "Гарячі напої",
     icon: "flame",
     type: "drink",
     items: [
       {
+        id: "espresso",
+        name: "Espresso",
+        price: 45,
+        image: "IMG/Еспрессо.png",
+      },
+      {
+        id: "americano",
+        name: "Americano",
+        price: 50,
+        image: "IMG/Амерікано.png",
+      },
+      {
         id: "cappuccino",
-        name: "Капучино",
-        price: 110,
-        image: "https://images.unsplash.com/photo-1572442388796-11668a67e53d?auto=format&fit=crop&w=900&q=80",
+        name: "Cappuccino",
+        price: 65,
+        image: "IMG/Cappuccino.png",
       },
       {
         id: "latte",
-        name: "Латте",
-        price: 115,
-        image: "https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=900&q=80",
+        name: "Latte",
+        price: 75,
+        image: "IMG/Latte.png",
       },
       {
-        id: "tea",
-        name: "Чай",
-        price: 80,
-        image: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=900&q=80",
+        id: "flat-white",
+        name: "Flat White",
+        price: 70,
+        image: "IMG/Flat White.png",
+      },
+      {
+        id: "cocoa-small",
+        name: "Какао",
+        price: 60,
+        group: "cocoa",
+        badge: "Маленький",
+        image: "IMG/Какао.png",
+      },
+      {
+        id: "cocoa-large",
+        name: "Какао",
+        price: 70,
+        group: "cocoa",
+        badge: "Великий",
+        image: "IMG/Какао.png",
+      },
+      {
+        id: "hot-chocolate-small",
+        name: "Гарячий шоколад",
+        price: 60,
+        group: "hot-chocolate",
+        badge: "Маленький",
+        image: "IMG/HotChocolate.png",
+      },
+      {
+        id: "hot-chocolate-large",
+        name: "Гарячий шоколад",
+        price: 70,
+        group: "hot-chocolate",
+        badge: "Великий",
+        image: "IMG/HotChocolate.png",
+      },
+      {
+        id: "tea-bag",
+        name: "Чай пакетований",
+        price: 40,
+        image: "IMG/TeaBag.png",
+      },
+      {
+        id: "fruit-tea",
+        name: "Чай фруктовий",
+        price: 65,
+        image: "IMG/FruitTea.png",
+      },
+      {
+        id: "honey",
+        name: "Мед",
+        price: 10,
+        image: "IMG/Honey.png",
+      },
+      {
+        id: "marshmallow",
+        name: "Маршмелоу",
+        price: 10,
+        image: "IMG/Marshmallow.png",
       },
     ],
   },
   {
     id: "desserts",
-    name: "Десерты",
+    name: "Десерти",
     icon: "cupcake",
     type: "dessert",
     items: [
       {
-        id: "cheesecake",
-        name: "Чизкейк",
-        price: 130,
-        image: "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=900&q=80",
+        id: "strawberry-pot",
+        name: "Горщик з полуницею",
+        price: 110,
+        image: "IMG/StrawberryPot.png",
       },
       {
-        id: "croissant",
-        name: "Круассан",
-        price: 90,
-        image: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=900&q=80",
+        id: "eskimo",
+        name: "Ескімо",
+        price: 70,
+        image: "IMG/Eskimo.png",
       },
       {
-        id: "brownie",
-        name: "Брауни",
-        price: 100,
-        image: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=900&q=80",
+        id: "trifle",
+        name: "Трайфли",
+        price: 110,
+        image: "IMG/Trifle.png",
+      },
+      {
+        id: "tiramisu-classic",
+        name: "Тірамісу",
+        price: 110,
+        group: "tiramisu",
+        badge: "Класичний",
+        image: "IMG/TiramisuClassic.png",
+      },
+      {
+        id: "tiramisu-chocolate",
+        name: "Тірамісу",
+        price: 110,
+        group: "tiramisu",
+        badge: "Шоколадний",
+        image: "IMG/TiramisuChocolate.png",
+      },
+      {
+        id: "tiramisu-raspberry",
+        name: "Тірамісу",
+        price: 110,
+        group: "tiramisu",
+        badge: "Малиновий",
+        image: "IMG/TiramisuRaspberry.png",
+      },
+      {
+        id: "tiramisu-strawberry",
+        name: "Тірамісу",
+        price: 110,
+        group: "tiramisu",
+        badge: "Полуничний",
+        image: "IMG/TiramisuStrawberry.png",
+      },
+      {
+        id: "napoleon-classic",
+        name: "Наполеон",
+        price: 110,
+        group: "napoleon",
+        badge: "Класичний",
+        image: "IMG/NapoleonClassic.png",
+      },
+      {
+        id: "napoleon-pistachio",
+        name: "Наполеон",
+        price: 110,
+        group: "napoleon",
+        badge: "Фісташковий",
+        image: "IMG/NapoleonPistachio.png",
+      },
+      {
+        id: "napoleon-chocolate",
+        name: "Наполеон",
+        price: 110,
+        group: "napoleon",
+        badge: "Шоколадний",
+        image: "IMG/NapoleonChocolate.png",
+      },
+      {
+        id: "panna-cotta-raspberry",
+        name: "Панакота",
+        price: 110,
+        group: "panna-cotta",
+        badge: "Малина",
+        image: "IMG/PannaCottaRaspberry.png",
+      },
+      {
+        id: "panna-cotta-mango",
+        name: "Панакота",
+        price: 110,
+        group: "panna-cotta",
+        badge: "Манго-маракуя",
+        image: "IMG/PannaCottaMangoPassion.png",
+      },
+      {
+        id: "honey-cake",
+        name: "Медовик",
+        price: 110,
+        image: "IMG/HoneyCake.png",
+      },
+      {
+        id: "banana-pudding",
+        name: "Банановий пудинг",
+        price: 110,
+        image: "IMG/BananaPudding.png",
+      },
+      {
+        id: "potato-cake",
+        name: "Тістечко «Картопля»",
+        price: 70,
+        image: "IMG/PotatoCake.png",
+      },
+      {
+        id: "mochi-single",
+        name: "Моті",
+        price: 60,
+        group: "mochi",
+        badge: "1 шт.",
+        image: "IMG/MochiOne.png",
+      },
+      {
+        id: "mochi-four",
+        name: "Моті",
+        price: 300,
+        group: "mochi",
+        badge: "4 шт.",
+        image: "IMG/MochiFour.png",
+      },
+      {
+        id: "mochi-six",
+        name: "Моті",
+        price: 400,
+        group: "mochi",
+        badge: "6 шт.",
+        image: "IMG/MochiSix.png",
+      },
+      {
+        id: "mousse-cake",
+        name: "Мусове тістечко",
+        price: 120,
+        image: "IMG/MousseCake.png",
+      },
+      {
+        id: "mousse-torte",
+        name: "Мусовий торт",
+        price: 650,
+        image: "IMG/MousseTorte.png",
+      },
+      {
+        id: "festive-cupcake",
+        name: "Святковий капкейк",
+        price: 110,
+        image: "IMG/FestiveCupcake.png",
       },
     ],
   },
@@ -141,22 +330,50 @@ const categories = [
   },
 ];
 
-const state = {
-  categoryId: "cold",
-  product: null,
-  quantity: 1,
-  payment: "cash",
-  employee: "",
-  period: "days",
-  sales: [
-    saleSeed("Бабл ти", "drink", 2, 280, "card", 0, "Анна"),
-    saleSeed("Лимонад", "drink", 1, 95, "cash", 1, "Мария"),
-    saleSeed("Чизкейк", "dessert", 1, 130, "card", 2, "Олег"),
-    saleSeed("Капучино", "drink", 3, 330, "cash", 3, "Анна"),
+const CITY_STORAGE_KEY = "cake-lovely-city";
+
+const cities = {
+  kharkiv: {
+    id: "kharkiv",
+    name: "Харків",
+    employees: ["Анна", "Марія", "Олег"],
+  },
+  lutsk: {
+    id: "lutsk",
+    name: "Луцьк",
+    employees: ["Ірина", "Наталія", "Богдан"],
+  },
+};
+
+const savedCityId = localStorage.getItem(CITY_STORAGE_KEY);
+const initialCityId = cities[savedCityId] ? savedCityId : null;
+
+const salesByCity = {
+  kharkiv: [
+    saleSeed("kharkiv", "Bubble Tea", "drink", 2, 200, "card", 0, "Анна"),
+    saleSeed("kharkiv", "Лимонад", "drink", 1, 80, "cash", 1, "Марія"),
+    saleSeed("kharkiv", "Чізкейк", "dessert", 1, 130, "card", 2, "Олег"),
+    saleSeed("kharkiv", "Cappuccino", "drink", 3, 195, "cash", 3, "Анна"),
+  ],
+  lutsk: [
+    saleSeed("lutsk", "Latte", "drink", 2, 150, "card", 0, "Ірина"),
+    saleSeed("lutsk", "Брауні", "dessert", 1, 100, "cash", 0, "Наталія"),
+    saleSeed("lutsk", "Iced Latte", "drink", 1, 90, "card", 1, "Богдан"),
+    saleSeed("lutsk", "Круасан", "dessert", 2, 180, "cash", 2, "Ірина"),
   ],
 };
 
-const money = new Intl.NumberFormat("ru-RU", {
+const state = {
+  cityId: initialCityId,
+  categoryId: "cold",
+  draftOrder: [],
+  payment: "cash",
+  employee: "",
+  period: "days",
+  sales: initialCityId ? salesByCity[initialCityId] : [],
+};
+
+const money = new Intl.NumberFormat("uk-UA", {
   style: "currency",
   currency: "UAH",
   maximumFractionDigits: 0,
@@ -173,13 +390,13 @@ async function requestCheckout(payload) {
 
   const result = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(result.error || "Checkout request failed");
+    throw new Error(result.error || "Не вдалося оформити операцію");
   }
 
   return result.sale;
 }
 
-function saleSeed(name, type, quantity, total, payment, daysAgo, employee) {
+function saleSeed(city, name, type, quantity, total, payment, daysAgo, employee) {
   const date = new Date();
   date.setDate(date.getDate() - daysAgo);
   return {
@@ -190,12 +407,149 @@ function saleSeed(name, type, quantity, total, payment, daysAgo, employee) {
     total,
     payment,
     employee,
+    city,
     date: date.toISOString(),
   };
 }
 
+function normalizeSale(sale) {
+  return {
+    id: sale.id || crypto.randomUUID(),
+    name: sale.name,
+    type: sale.type,
+    quantity: Number(sale.quantity),
+    total: Number(sale.total),
+    payment: sale.payment,
+    employee: sale.employee || "",
+    orderNumber: sale.orderNumber || "",
+    city: sale.city || state.cityId,
+    date: sale.date,
+  };
+}
+
+function renderEmployeeOptions() {
+  const employees = cities[state.cityId]?.employees || [];
+  els.employeeOptions.innerHTML = employees
+    .map((employee) => `<button type="button" role="option" data-employee="${employee}">${employee}</button>`)
+    .join("");
+}
+
+function renderWorkspace() {
+  renderEmployeeOptions();
+  renderCategories();
+  renderProducts();
+  renderStats();
+  updateSalesStickyState();
+  els.logoutButtons.forEach((button) => {
+    button.title = `${cities[state.cityId]?.name || "Місто"}: обрати інше місто`;
+  });
+}
+
+async function loadCitySales(cityId) {
+  if (window.location.protocol === "file:") return;
+
+  const response = await fetch(`/api/checkout?city=${encodeURIComponent(cityId)}`);
+  if (!response.ok) throw new Error("Не вдалося завантажити продажі філії");
+  const result = await response.json();
+  state.sales = (result.sales || []).map(normalizeSale);
+  salesByCity[cityId] = state.sales;
+}
+
+function enterWorkspace() {
+  els.platformLoader.classList.add("is-hidden");
+  els.appShell.classList.add("is-ready");
+  els.appShell.setAttribute("aria-hidden", "false");
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+async function selectCity(cityId, { persist = true, minimumLoaderTime = 0 } = {}) {
+  if (!cities[cityId]) return;
+  const startedAt = Date.now();
+  state.cityId = cityId;
+  state.sales = salesByCity[cityId];
+  state.categoryId = "cold";
+  state.period = "days";
+  resetDraftOrder();
+  if (persist) localStorage.setItem(CITY_STORAGE_KEY, cityId);
+  renderWorkspace();
+
+  try {
+    await loadCitySales(cityId);
+    renderWorkspace();
+  } catch (error) {
+    console.warn(error.message);
+  }
+
+  const remainingDelay = Math.max(0, minimumLoaderTime - (Date.now() - startedAt));
+  window.setTimeout(enterWorkspace, remainingDelay);
+}
+
+function showCitySelection() {
+  localStorage.removeItem(CITY_STORAGE_KEY);
+  state.cityId = null;
+  state.sales = [];
+  resetDraftOrder();
+  [els.orderDialog, els.topUpDialog].forEach((dialog) => {
+    if (dialog.open) dialog.close();
+  });
+  switchView("sales");
+  els.appShell.classList.remove("is-ready");
+  els.appShell.setAttribute("aria-hidden", "true");
+  els.platformLoader.classList.remove("is-hidden");
+  els.platformLoader.classList.add("is-city-ready");
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+function draftOrderTotal() {
+  return state.draftOrder.reduce((sum, item) => sum + item.price * item.quantity, 0);
+}
+
+function draftPositionCount() {
+  return state.draftOrder.reduce((sum, item) => sum + item.quantity, 0);
+}
+
+function draftLineCount() {
+  return state.draftOrder.length;
+}
+
+function draftMetaLabel() {
+  const count = draftPositionCount();
+  if (count % 10 === 1 && count % 100 !== 11) return `${count} позиція`;
+  if (count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 10 || count % 100 >= 20)) return `${count} позиції`;
+  return `${count} позицій`;
+}
+
+function resetDraftOrder() {
+  state.draftOrder = [];
+  state.payment = "cash";
+  state.employee = "";
+  els.cashInput.value = "";
+  els.employeeValue.textContent = "Ім’я співробітника";
+  els.employeePicker.classList.remove("is-open");
+  els.employeeTrigger.setAttribute("aria-expanded", "false");
+}
+
+function addProductToDraft(product) {
+  const existingItem = state.draftOrder.find((item) => item.id === product.id);
+  if (existingItem) {
+    existingItem.quantity += 1;
+    return;
+  }
+
+  state.draftOrder.push({
+    id: product.id,
+    name: product.name,
+    image: product.image,
+    price: product.price,
+    badge: product.badge || (product.isDouble ? "Подвійний" : ""),
+    type: currentCategory().type,
+    quantity: 1,
+  });
+}
+
 const els = {
   platformLoader: document.querySelector("#platformLoader"),
+  cityPicker: document.querySelector("#cityPicker"),
   appShell: document.querySelector(".app-shell"),
   categoryTabs: document.querySelector("#categoryTabs"),
   productGrid: document.querySelector("#productGrid"),
@@ -203,14 +557,18 @@ const els = {
   topUpDialog: document.querySelector("#topUpDialog"),
   orderForm: document.querySelector("#orderForm"),
   topUpForm: document.querySelector("#topUpForm"),
-  orderImage: document.querySelector("#orderImage"),
+  draftItems: document.querySelector("#draftItems"),
+  addMoreItems: document.querySelector("#addMoreItems"),
+  cancelOrder: document.querySelector("#cancelOrder"),
   orderTitle: document.querySelector("#orderTitle"),
-  quantityValue: document.querySelector("#quantityValue"),
+  orderMeta: document.querySelector("#orderMeta"),
   orderTotal: document.querySelector("#orderTotal"),
   cashInput: document.querySelector("#cashInput"),
   employeePicker: document.querySelector("#employeePicker"),
   employeeTrigger: document.querySelector("#employeeTrigger"),
   employeeValue: document.querySelector("#employeeValue"),
+  employeeOptions: document.querySelector("#employeeOptions"),
+  logoutButtons: document.querySelectorAll("[data-logout]"),
   topUpAmount: document.querySelector("#topUpAmount"),
   topUpOrderNumber: document.querySelector("#topUpOrderNumber"),
   changeValue: document.querySelector("#changeValue"),
@@ -292,33 +650,39 @@ function renderCategories() {
 }
 
 function renderProducts() {
-  els.productGrid.innerHTML = currentCategory().items
-    .map(
-      (product) => `
+  const items = currentCategory().items;
+  const renderedGroups = new Set();
+  const productCard = (product) => `
         <button class="product-card" type="button" data-product="${product.id}">
-          <img class="product-image" src="${product.image}" alt="${product.name}" />
+          <span class="product-media">
+            <img class="product-image" src="${product.image}" alt="${product.name}" />
+            ${product.isDouble || product.badge ? `<span class="product-badge">${product.badge || "Подвійний"}</span>` : ""}
+          </span>
           <div>
             <h2 class="card-title">${product.name}</h2>
             <p class="product-price">${money.format(product.price)}</p>
           </div>
         </button>
-      `,
-    )
+  `;
+
+  els.productGrid.innerHTML = items
+    .map((product) => {
+      if (!product.group) return productCard(product);
+      if (renderedGroups.has(product.group)) return "";
+
+      renderedGroups.add(product.group);
+      const groupedItems = items.filter((item) => item.group === product.group);
+      return `<div class="product-pair product-pair--${groupedItems.length}">${groupedItems.map(productCard).join("")}</div>`;
+    })
     .join("");
 }
 
 function openOrder(product) {
-  state.product = product;
-  state.quantity = 1;
-  state.payment = "cash";
-  els.orderImage.src = product.image;
-  els.orderImage.alt = product.name;
-  els.orderTitle.textContent = product.name;
-  els.cashInput.value = "";
-  state.employee = "";
-  els.employeeValue.textContent = "Имя сотрудника";
-  els.employeePicker.classList.remove("is-open");
-  els.employeeTrigger.setAttribute("aria-expanded", "false");
+  if (!state.draftOrder.length) {
+    resetDraftOrder();
+  }
+
+  addProductToDraft(product);
   renderOrder();
   els.orderDialog.showModal();
 }
@@ -330,9 +694,35 @@ function openTopUp() {
 }
 
 function renderOrder() {
-  const total = state.product.price * state.quantity;
-  els.quantityValue.textContent = state.quantity;
+  const total = draftOrderTotal();
+  const canCancelOrder = draftPositionCount() > 1;
+  els.orderTitle.textContent = "Новий чек";
+  els.orderMeta.textContent = draftMetaLabel();
+  els.draftItems.innerHTML = state.draftOrder
+    .map(
+      (item) => `
+        <article class="draft-item" data-draft-item="${item.id}">
+          <button class="draft-remove" type="button" data-remove-item="${item.id}" aria-label="Видалити ${item.name}">×</button>
+          <img class="draft-image" src="${item.image}" alt="${item.name}" />
+          <div class="draft-info">
+            <div class="draft-copy">
+              <p class="card-title">${item.name}</p>
+              ${item.badge ? `<span class="draft-badge">${item.badge}</span>` : ""}
+            </div>
+            <div class="draft-quantity">
+              <button class="draft-step-button draft-step-button-minus" type="button" data-step-item="${item.id}" data-step-action="minus" aria-label="Зменшити ${item.name}">−</button>
+              <span class="draft-count">${item.quantity}</span>
+              <button class="draft-step-button draft-step-button-plus" type="button" data-step-item="${item.id}" data-step-action="plus" aria-label="Збільшити ${item.name}">+</button>
+            </div>
+          </div>
+          <p class="draft-price">${money.format(item.price * item.quantity)}</p>
+        </article>
+      `,
+    )
+    .join("");
   els.orderTotal.textContent = money.format(total);
+  els.cancelOrder.classList.toggle("is-hidden", !canCancelOrder);
+  els.orderForm.querySelector(".order-footer").classList.toggle("has-cancel", canCancelOrder);
   document.querySelectorAll(".payment-button").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.payment === state.payment);
   });
@@ -345,26 +735,29 @@ function renderOrder() {
 }
 
 async function confirmOrder() {
-  const total = state.product.price * state.quantity;
-  const sale = await requestCheckout({
-    name: state.product.name,
-    type: currentCategory().type,
-    quantity: state.quantity,
-    total,
-    payment: state.payment,
-    employee: state.employee,
-    date: new Date().toISOString(),
+  if (!draftLineCount()) return;
+
+  const checkoutDate = new Date().toISOString();
+  const createdSales = await Promise.all(
+    state.draftOrder.map((item) =>
+      requestCheckout({
+        city: state.cityId,
+        name: item.name,
+        type: item.type,
+        quantity: item.quantity,
+        total: item.price * item.quantity,
+        payment: state.payment,
+        employee: state.employee,
+        date: checkoutDate,
+      }),
+    ),
+  );
+
+  createdSales.reverse().forEach((sale) => {
+    state.sales.unshift(normalizeSale(sale));
   });
-  state.sales.unshift({
-    id: sale.id || crypto.randomUUID(),
-    name: sale.name,
-    type: sale.type,
-    quantity: sale.quantity,
-    total: sale.total,
-    payment: sale.payment,
-    employee: sale.employee,
-    date: sale.date,
-  });
+
+  resetDraftOrder();
   els.orderDialog.close();
   renderStats();
 }
@@ -375,6 +768,7 @@ async function confirmTopUp() {
   const orderNumber = els.topUpOrderNumber.value.trim();
 
   const sale = await requestCheckout({
+    city: state.cityId,
     name: "Доплата",
     type: "adjustment",
     quantity: 1,
@@ -384,17 +778,7 @@ async function confirmTopUp() {
     orderNumber,
     date: new Date().toISOString(),
   });
-  state.sales.unshift({
-    id: sale.id || crypto.randomUUID(),
-    name: sale.name,
-    type: sale.type,
-    quantity: sale.quantity,
-    total: sale.total,
-    payment: sale.payment,
-    employee: sale.employee,
-    orderNumber: sale.orderNumber,
-    date: sale.date,
-  });
+  state.sales.unshift(normalizeSale(sale));
   els.topUpDialog.close();
   renderStats();
 }
@@ -436,8 +820,8 @@ function renderStats() {
       return saleDate.getMonth() === today.getMonth() && saleDate.getFullYear() === today.getFullYear();
     })
     .reduce((sum, sale) => sum + sale.total, 0);
-  const monthNames = ["январе", "феврале", "марте", "апреле", "мае", "июне", "июле", "августе", "сентябре", "октябре", "ноябре", "декабре"];
-  const periodLabel = isDailyPeriod ? "сегодня" : `в ${monthNames[today.getMonth()]}`;
+  const monthNames = ["січні", "лютому", "березні", "квітні", "травні", "червні", "липні", "серпні", "вересні", "жовтні", "листопаді", "грудні"];
+  const periodLabel = isDailyPeriod ? "сьогодні" : `у ${monthNames[today.getMonth()]}`;
   const sellerTotals = state.sales.reduce((totals, sale) => {
     if (sale.employee) totals[sale.employee] = (totals[sale.employee] || 0) + sale.total;
     return totals;
@@ -445,9 +829,9 @@ function renderStats() {
   const bestSeller = Object.entries(sellerTotals).sort(([, firstTotal], [, secondTotal]) => secondTotal - firstTotal)[0]?.[0] || "—";
   els.drinksSold.textContent = drinks;
   els.dessertsSold.textContent = desserts;
-  els.drinksSoldLabel.textContent = `Напитки ${periodLabel}`;
-  els.dessertsSoldLabel.textContent = `Десерты ${periodLabel}`;
-  els.totalRevenueLabel.textContent = `Выручка ${periodLabel}`;
+  els.drinksSoldLabel.textContent = `Напої ${periodLabel}`;
+  els.dessertsSoldLabel.textContent = `Десерти ${periodLabel}`;
+  els.totalRevenueLabel.textContent = `Виручка ${periodLabel}`;
   els.totalRevenue.textContent = money.format(isDailyPeriod ? todayRevenue : monthRevenue);
   els.bestSeller.textContent = bestSeller;
   els.todayRevenue.textContent = money.format(todayRevenue);
@@ -480,7 +864,7 @@ function buildDayPoints() {
     date.setDate(date.getDate() - (6 - index));
     const key = date.toDateString();
     return {
-      label: date.toLocaleDateString("ru-RU", { weekday: "short" }),
+      label: date.toLocaleDateString("uk-UA", { weekday: "short" }),
       total: state.sales.filter((sale) => new Date(sale.date).toDateString() === key).reduce((sum, sale) => sum + sale.total, 0),
     };
   });
@@ -491,7 +875,7 @@ function buildMonthPoints() {
     const date = new Date();
     date.setMonth(date.getMonth() - (5 - index));
     return {
-      label: date.toLocaleDateString("ru-RU", { month: "short" }),
+      label: date.toLocaleDateString("uk-UA", { month: "short" }),
       total: state.sales
         .filter((sale) => {
           const saleDate = new Date(sale.date);
@@ -504,7 +888,7 @@ function buildMonthPoints() {
 
 function renderRecentSales() {
   if (!state.sales.length) {
-    els.recentSales.innerHTML = `<p class="card-text">Продаж пока нет.</p>`;
+    els.recentSales.innerHTML = `<p class="card-text">Продажів поки немає.</p>`;
     return;
   }
 
@@ -515,20 +899,30 @@ function renderRecentSales() {
         <div class="sale-row">
           <div>
             <p class="card-title">${sale.name}</p>
-            <p class="card-text">${new Date(sale.date).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</p>
+            <p class="card-text">${new Date(sale.date).toLocaleString("uk-UA", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</p>
           </div>
-          <p class="price-label sale-type">${sale.type === "adjustment" ? "Доплата" : "Продажа"}</p>
-          <p class="sale-payment">${sale.type === "adjustment" ? "—" : sale.payment === "cash" ? "Наличка" : "Карта"}</p>
+          <p class="price-label sale-type">${sale.type === "adjustment" ? "Доплата" : "Продаж"}</p>
+          <p class="sale-payment">${sale.type === "adjustment" ? "—" : sale.payment === "cash" ? "Готівка" : "Картка"}</p>
           <p class="price-label sale-employee">${sale.employee || "—"}</p>
           <p class="price-label sale-order">${sale.type === "adjustment" ? sale.orderNumber || "—" : "—"}</p>
           <p class="price-label">${sale.quantity} шт.</p>
           <p class="product-price">${money.format(sale.total)}</p>
-          <button class="button button-link" type="button" data-delete="${sale.id}">Удалить</button>
+          <button class="button button-link" type="button" data-delete="${sale.id}">Видалити</button>
         </div>
       `,
     )
     .join("");
 }
+
+els.cityPicker.addEventListener("click", (event) => {
+  const cityButton = event.target.closest("[data-city]");
+  if (!cityButton) return;
+  selectCity(cityButton.dataset.city);
+});
+
+els.logoutButtons.forEach((button) => {
+  button.addEventListener("click", showCitySelection);
+});
 
 els.categoryTabs.addEventListener("click", (event) => {
   const button = event.target.closest("[data-category]");
@@ -549,18 +943,13 @@ els.productGrid.addEventListener("click", (event) => {
   openOrder(product);
 });
 
-document.querySelector("#minusQty").addEventListener("click", () => {
-  state.quantity = Math.max(1, state.quantity - 1);
-  renderOrder();
-});
-
-document.querySelector("#plusQty").addEventListener("click", () => {
-  state.quantity += 1;
-  renderOrder();
-});
-
 document.querySelector("#closeDialog").addEventListener("click", () => els.orderDialog.close());
 document.querySelector("#closeTopUpDialog").addEventListener("click", () => els.topUpDialog.close());
+els.addMoreItems.addEventListener("click", () => els.orderDialog.close());
+els.cancelOrder.addEventListener("click", () => {
+  resetDraftOrder();
+  els.orderDialog.close();
+});
 
 [els.orderDialog, els.topUpDialog].forEach((dialog) => {
   dialog.addEventListener("click", (event) => {
@@ -576,6 +965,43 @@ document.querySelectorAll(".payment-button").forEach((button) => {
 });
 
 els.cashInput.addEventListener("input", renderOrder);
+
+els.draftItems.addEventListener("click", (event) => {
+  const removeButton = event.target.closest("[data-remove-item]");
+  if (removeButton) {
+    state.draftOrder = state.draftOrder.filter((item) => item.id !== removeButton.dataset.removeItem);
+    if (!draftLineCount()) {
+      resetDraftOrder();
+      els.orderDialog.close();
+      return;
+    }
+    renderOrder();
+    return;
+  }
+
+  const stepButton = event.target.closest("[data-step-item]");
+  if (!stepButton) return;
+
+  const item = state.draftOrder.find((entry) => entry.id === stepButton.dataset.stepItem);
+  if (!item) return;
+
+  if (stepButton.dataset.stepAction === "plus") {
+    item.quantity += 1;
+  } else {
+    item.quantity -= 1;
+    if (item.quantity <= 0) {
+      state.draftOrder = state.draftOrder.filter((entry) => entry.id !== item.id);
+    }
+  }
+
+  if (!draftLineCount()) {
+    resetDraftOrder();
+    els.orderDialog.close();
+    return;
+  }
+
+  renderOrder();
+});
 
 els.employeeTrigger.addEventListener("click", () => {
   const isOpen = els.employeePicker.classList.toggle("is-open");
@@ -600,19 +1026,31 @@ document.addEventListener("click", (event) => {
 els.orderForm.addEventListener("submit", (event) => {
   event.preventDefault();
   confirmOrder().catch((error) => {
-    window.alert(`Ошибка оформления: ${error.message}`);
+    window.alert(`Помилка оформлення: ${error.message}`);
   });
 });
 
 els.topUpForm.addEventListener("submit", (event) => {
   event.preventDefault();
   confirmTopUp().catch((error) => {
-    window.alert(`Ошибка доплаты: ${error.message}`);
+    window.alert(`Помилка доплати: ${error.message}`);
   });
 });
 
 document.querySelectorAll(".app-view").forEach((button) => {
-  button.addEventListener("click", () => switchView(button.dataset.view));
+  button.addEventListener("click", () => {
+    switchView(button.dataset.view);
+    document.querySelectorAll(".app-menu").forEach((menu) => menu.classList.remove("is-open"));
+    document.querySelectorAll(".mobile-menu-toggle").forEach((toggle) => toggle.setAttribute("aria-expanded", "false"));
+  });
+});
+
+document.querySelectorAll(".mobile-menu-toggle").forEach((toggle) => {
+  toggle.addEventListener("click", () => {
+    const menu = toggle.closest(".app-menu");
+    const isOpen = menu.classList.toggle("is-open");
+    toggle.setAttribute("aria-expanded", String(isOpen));
+  });
 });
 
 document.querySelectorAll(".period-button").forEach((button) => {
@@ -629,15 +1067,14 @@ els.recentSales.addEventListener("click", (event) => {
   const button = event.target.closest("[data-delete]");
   if (!button) return;
   state.sales = state.sales.filter((sale) => sale.id !== button.dataset.delete);
+  salesByCity[state.cityId] = state.sales;
   renderStats();
 });
 
-renderCategories();
-renderProducts();
-renderStats();
-updateSalesStickyState();
-
-window.setTimeout(() => {
-  els.platformLoader.classList.add("is-hidden");
-  els.appShell.classList.add("is-ready");
-}, 2500);
+if (initialCityId) {
+  selectCity(initialCityId, { persist: false, minimumLoaderTime: 2500 });
+} else {
+  window.setTimeout(() => {
+    els.platformLoader.classList.add("is-city-ready");
+  }, 1100);
+}
