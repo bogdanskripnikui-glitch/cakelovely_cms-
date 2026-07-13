@@ -400,6 +400,16 @@ async function requestCheckout(payload) {
   return result.sale;
 }
 
+async function deleteCheckout(id) {
+  const url = `${checkoutApiUrl}?id=${encodeURIComponent(id)}&city=${encodeURIComponent(state.cityId)}`;
+  const response = await fetch(url, { method: "DELETE" });
+  const result = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(result.error || "Не вдалося видалити операцію");
+  }
+}
+
 function saleSeed(city, name, type, quantity, total, payment, daysAgo, employee) {
   const date = new Date();
   date.setDate(date.getDate() - daysAgo);
@@ -1065,12 +1075,20 @@ document.querySelectorAll(".period-button").forEach((button) => {
 
 window.addEventListener("scroll", updateSalesStickyState, { passive: true });
 
-els.recentSales.addEventListener("click", (event) => {
+els.recentSales.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-delete]");
   if (!button) return;
-  state.sales = state.sales.filter((sale) => sale.id !== button.dataset.delete);
-  salesByCity[state.cityId] = state.sales;
-  renderStats();
+  button.disabled = true;
+
+  try {
+    await deleteCheckout(button.dataset.delete);
+    state.sales = state.sales.filter((sale) => sale.id !== button.dataset.delete);
+    salesByCity[state.cityId] = state.sales;
+    renderStats();
+  } catch (error) {
+    button.disabled = false;
+    window.alert(`Помилка видалення: ${error.message}`);
+  }
 });
 
 if (initialCityId) {

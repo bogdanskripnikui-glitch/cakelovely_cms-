@@ -24,7 +24,7 @@ function serializeSale(data) {
 module.exports = async (request, response) => {
   response.setHeader("Access-Control-Allow-Origin", "*");
   response.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  response.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
 
   if (request.method === "OPTIONS") {
     response.statusCode = 204;
@@ -47,8 +47,32 @@ module.exports = async (request, response) => {
     }
   }
 
+  if (request.method === "DELETE") {
+    try {
+      const { id, city } = request.query || {};
+      if (!id || !city || !["kharkiv", "lutsk"].includes(city)) {
+        return sendJson(response, 400, { error: "Некоректні дані операції" });
+      }
+
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase
+        .from(getCheckoutTable())
+        .delete()
+        .eq("id", id)
+        .eq("city", city)
+        .select("id")
+        .maybeSingle();
+
+      if (error) return sendJson(response, 500, { error: error.message });
+      if (!data) return sendJson(response, 404, { error: "Операцію не знайдено" });
+      return sendJson(response, 200, { ok: true, id: data.id });
+    } catch (error) {
+      return sendJson(response, 500, { error: error.message || "Не вдалося видалити операцію" });
+    }
+  }
+
   if (request.method !== "POST") {
-    response.setHeader("Allow", "GET, POST, OPTIONS");
+    response.setHeader("Allow", "GET, POST, DELETE, OPTIONS");
     return sendJson(response, 405, { error: "Метод не підтримується" });
   }
 
