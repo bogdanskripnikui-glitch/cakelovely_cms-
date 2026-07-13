@@ -559,7 +559,9 @@ function draftOrderTotal() {
 }
 
 function draftItemDiscount(item) {
-  return state.employeeDiscount ? EMPLOYEE_DISCOUNTS[item.categoryId] || 0 : 0;
+  if (!state.employeeDiscount) return 0;
+  if (item.type === "dessert") return EMPLOYEE_DISCOUNTS.dessert;
+  return EMPLOYEE_DISCOUNTS[item.categoryId] || 0;
 }
 
 function draftItemTotal(item) {

@@ -1017,7 +1017,8 @@ body::before {
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  margin-left: auto;
+  margin-left: 8px;
+  margin-right: auto;
   color: var(--color-slate);
   font-size: 15px;
   font-weight: 500;
@@ -1985,6 +1986,7 @@ body::before {
     order: 3;
     width: 100%;
     margin-left: 0;
+    margin-right: 0;
     padding: 8px 0 2px;
     justify-content: space-between;
   }
