@@ -1,4 +1,5 @@
 const { getCheckoutTable, getSupabaseClient } = require("../lib/supabase");
+const { getRequestSession } = require("../lib/auth");
 
 function sendJson(response, statusCode, payload) {
   response.statusCode = statusCode;
@@ -23,7 +24,7 @@ function serializeSale(data) {
 
 module.exports = async (request, response) => {
   response.setHeader("Access-Control-Allow-Origin", "*");
-  response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   response.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
 
   if (request.method === "OPTIONS") {
@@ -31,12 +32,16 @@ module.exports = async (request, response) => {
     return response.end();
   }
 
+  const session = getRequestSession(request);
+  if (!session) return sendJson(response, 401, { error: "Потрібна авторизація" });
+
   if (request.method === "GET") {
     try {
       const city = request.query?.city;
       if (!city || !["kharkiv", "lutsk"].includes(city)) {
         return sendJson(response, 400, { error: "Некоректне місто" });
       }
+      if (session.city !== city) return sendJson(response, 403, { error: "Немає доступу до цієї філії" });
 
       const supabase = getSupabaseClient();
       const { data, error } = await supabase.from(getCheckoutTable()).select("*").eq("city", city).order("sold_at", { ascending: false });
@@ -53,6 +58,7 @@ module.exports = async (request, response) => {
       if (!id || !city || !["kharkiv", "lutsk"].includes(city)) {
         return sendJson(response, 400, { error: "Некоректні дані операції" });
       }
+      if (session.city !== city) return sendJson(response, 403, { error: "Немає доступу до цієї філії" });
 
       const supabase = getSupabaseClient();
       const { data, error } = await supabase
@@ -92,6 +98,7 @@ module.exports = async (request, response) => {
     if (!city || !["kharkiv", "lutsk"].includes(city) || !name || !type || !quantity || !total || !payment) {
       return sendJson(response, 400, { error: "Не заповнені обов’язкові поля" });
     }
+    if (session.city !== city) return sendJson(response, 403, { error: "Немає доступу до цієї філії" });
 
     const payload = {
       city,

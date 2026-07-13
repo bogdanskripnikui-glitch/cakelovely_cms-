@@ -331,36 +331,29 @@ const categories = [
 ];
 
 const CITY_STORAGE_KEY = "cake-lovely-city";
+const SESSION_STORAGE_KEY = "cake-lovely-session";
 
 const cities = {
   kharkiv: {
     id: "kharkiv",
     name: "Харків",
-    employees: ["Анна", "Марія", "Олег"],
+    employees: ["Даша", "Настя", "Соня", "Катя", "Тетяна"],
   },
   lutsk: {
     id: "lutsk",
     name: "Луцьк",
-    employees: ["Ірина", "Наталія", "Богдан"],
+    employees: ["Таня", "Соня", "Аня"],
   },
 };
 
 const savedCityId = localStorage.getItem(CITY_STORAGE_KEY);
-const initialCityId = cities[savedCityId] ? savedCityId : null;
+let authToken = localStorage.getItem(SESSION_STORAGE_KEY) || "";
+let pendingCityId = null;
+const initialCityId = cities[savedCityId] && authToken ? savedCityId : null;
 
 const salesByCity = {
-  kharkiv: [
-    saleSeed("kharkiv", "Bubble Tea", "drink", 2, 200, "card", 0, "Анна"),
-    saleSeed("kharkiv", "Лимонад", "drink", 1, 80, "cash", 1, "Марія"),
-    saleSeed("kharkiv", "Чізкейк", "dessert", 1, 130, "card", 2, "Олег"),
-    saleSeed("kharkiv", "Cappuccino", "drink", 3, 195, "cash", 3, "Анна"),
-  ],
-  lutsk: [
-    saleSeed("lutsk", "Latte", "drink", 2, 150, "card", 0, "Ірина"),
-    saleSeed("lutsk", "Брауні", "dessert", 1, 100, "cash", 0, "Наталія"),
-    saleSeed("lutsk", "Iced Latte", "drink", 1, 90, "card", 1, "Богдан"),
-    saleSeed("lutsk", "Круасан", "dessert", 2, 180, "cash", 2, "Ірина"),
-  ],
+  kharkiv: [],
+  lutsk: [],
 };
 
 const state = {
@@ -382,13 +375,40 @@ const money = new Intl.NumberFormat("uk-UA", {
 const checkoutApiUrl = window.location.protocol === "file:"
   ? "https://cakelovely-cms.vercel.app/api/checkout"
   : "/api/checkout";
+const authApiUrl = window.location.protocol === "file:"
+  ? "https://cakelovely-cms.vercel.app/api/auth"
+  : "/api/auth";
+
+function authorizedHeaders(includeContentType = false) {
+  return {
+    ...(includeContentType ? { "Content-Type": "application/json" } : {}),
+    ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+  };
+}
+
+async function authenticateCity(city, password) {
+  const response = await fetch(authApiUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ city, password }),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(result.error || "Не вдалося увійти");
+  authToken = result.token;
+  localStorage.setItem(SESSION_STORAGE_KEY, authToken);
+  return result.city;
+}
+
+async function verifySession(city) {
+  const response = await fetch(authApiUrl, { headers: authorizedHeaders() });
+  const result = await response.json().catch(() => ({}));
+  return response.ok && result.city === city;
+}
 
 async function requestCheckout(payload) {
   const response = await fetch(checkoutApiUrl, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: authorizedHeaders(true),
     body: JSON.stringify(payload),
   });
 
@@ -402,7 +422,7 @@ async function requestCheckout(payload) {
 
 async function deleteCheckout(id) {
   const url = `${checkoutApiUrl}?id=${encodeURIComponent(id)}&city=${encodeURIComponent(state.cityId)}`;
-  const response = await fetch(url, { method: "DELETE" });
+  const response = await fetch(url, { method: "DELETE", headers: authorizedHeaders() });
   const result = await response.json().catch(() => ({}));
 
   if (!response.ok) {
@@ -460,8 +480,12 @@ function renderWorkspace() {
 }
 
 async function loadCitySales(cityId) {
-  const response = await fetch(`${checkoutApiUrl}?city=${encodeURIComponent(cityId)}`);
-  if (!response.ok) throw new Error("Не вдалося завантажити продажі філії");
+  const response = await fetch(`${checkoutApiUrl}?city=${encodeURIComponent(cityId)}`, { headers: authorizedHeaders() });
+  if (!response.ok) {
+    const error = new Error(response.status === 401 ? "Сесія завершена" : "Не вдалося завантажити продажі філії");
+    error.status = response.status;
+    throw error;
+  }
   const result = await response.json();
   state.sales = (result.sales || []).map(normalizeSale);
   salesByCity[cityId] = state.sales;
@@ -489,6 +513,10 @@ async function selectCity(cityId, { persist = true, minimumLoaderTime = 0 } = {}
     await loadCitySales(cityId);
     renderWorkspace();
   } catch (error) {
+    if (error.status === 401 || error.status === 403) {
+      showCitySelection();
+      return;
+    }
     console.warn(error.message);
   }
 
@@ -498,6 +526,9 @@ async function selectCity(cityId, { persist = true, minimumLoaderTime = 0 } = {}
 
 function showCitySelection() {
   localStorage.removeItem(CITY_STORAGE_KEY);
+  localStorage.removeItem(SESSION_STORAGE_KEY);
+  authToken = "";
+  pendingCityId = null;
   state.cityId = null;
   state.sales = [];
   resetDraftOrder();
@@ -509,6 +540,10 @@ function showCitySelection() {
   els.appShell.setAttribute("aria-hidden", "true");
   els.platformLoader.classList.remove("is-hidden");
   els.platformLoader.classList.add("is-city-ready");
+  els.cityGrid.hidden = false;
+  els.cityLogin.hidden = true;
+  els.cityPassword.value = "";
+  els.cityLoginError.textContent = "";
   window.scrollTo({ top: 0, behavior: "instant" });
 }
 
@@ -562,6 +597,12 @@ function addProductToDraft(product) {
 const els = {
   platformLoader: document.querySelector("#platformLoader"),
   cityPicker: document.querySelector("#cityPicker"),
+  cityGrid: document.querySelector(".city-grid"),
+  cityLogin: document.querySelector("#cityLogin"),
+  cityLoginTitle: document.querySelector("#cityLoginTitle"),
+  cityLoginBack: document.querySelector("#cityLoginBack"),
+  cityPassword: document.querySelector("#cityPassword"),
+  cityLoginError: document.querySelector("#cityLoginError"),
   appShell: document.querySelector(".app-shell"),
   categoryTabs: document.querySelector("#categoryTabs"),
   productGrid: document.querySelector("#productGrid"),
@@ -929,7 +970,38 @@ function renderRecentSales() {
 els.cityPicker.addEventListener("click", (event) => {
   const cityButton = event.target.closest("[data-city]");
   if (!cityButton) return;
-  selectCity(cityButton.dataset.city);
+  pendingCityId = cityButton.dataset.city;
+  els.cityGrid.hidden = true;
+  els.cityLogin.hidden = false;
+  els.cityLoginTitle.textContent = `Вхід: ${cities[pendingCityId].name}`;
+  els.cityLoginError.textContent = "";
+  els.cityPassword.value = "";
+  els.cityPassword.focus();
+});
+
+els.cityLoginBack.addEventListener("click", () => {
+  pendingCityId = null;
+  els.cityGrid.hidden = false;
+  els.cityLogin.hidden = true;
+  els.cityLoginError.textContent = "";
+});
+
+els.cityLogin.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!pendingCityId) return;
+  const submitButton = els.cityLogin.querySelector("[type='submit']");
+  submitButton.disabled = true;
+  els.cityLoginError.textContent = "";
+
+  try {
+    const cityId = await authenticateCity(pendingCityId, els.cityPassword.value);
+    await selectCity(cityId);
+  } catch (error) {
+    els.cityLoginError.textContent = error.message;
+    els.cityPassword.select();
+  } finally {
+    submitButton.disabled = false;
+  }
 });
 
 els.logoutButtons.forEach((button) => {
@@ -1092,7 +1164,12 @@ els.recentSales.addEventListener("click", async (event) => {
 });
 
 if (initialCityId) {
-  selectCity(initialCityId, { persist: false, minimumLoaderTime: 2500 });
+  verifySession(initialCityId)
+    .then((isValid) => {
+      if (isValid) return selectCity(initialCityId, { persist: false, minimumLoaderTime: 2500 });
+      showCitySelection();
+    })
+    .catch(showCitySelection);
 } else {
   window.setTimeout(() => {
     els.platformLoader.classList.add("is-city-ready");

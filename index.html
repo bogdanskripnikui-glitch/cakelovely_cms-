@@ -37,6 +37,18 @@
               <span>Луцьк</span>
             </button>
           </div>
+          <form class="city-login" id="cityLogin" hidden>
+            <div class="city-login-head">
+              <p class="city-login-title" id="cityLoginTitle">Вхід</p>
+              <button class="city-login-back" type="button" id="cityLoginBack">Назад</button>
+            </div>
+            <label class="city-password-label" for="cityPassword">Пароль</label>
+            <div class="city-login-row">
+              <input class="city-password-input" id="cityPassword" type="password" inputmode="numeric" autocomplete="current-password" maxlength="32" required />
+              <button class="button button-primary city-login-submit" type="submit">Увійти</button>
+            </div>
+            <p class="city-login-error" id="cityLoginError" role="alert"></p>
+          </form>
         </section>
       </div>
     </div>

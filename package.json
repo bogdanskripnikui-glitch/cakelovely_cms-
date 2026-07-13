@@ -4,7 +4,7 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "check": "node --check sales.js && node --check api/checkout.js && node --check lib/supabase.js"
+    "check": "node --check sales.js && node --check api/auth.js && node --check api/checkout.js && node --check lib/auth.js && node --check lib/supabase.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.53.0"
