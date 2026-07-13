@@ -22,6 +22,15 @@ function serializeSale(data) {
 }
 
 module.exports = async (request, response) => {
+  response.setHeader("Access-Control-Allow-Origin", "*");
+  response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+
+  if (request.method === "OPTIONS") {
+    response.statusCode = 204;
+    return response.end();
+  }
+
   if (request.method === "GET") {
     try {
       const city = request.query?.city;
@@ -39,7 +48,7 @@ module.exports = async (request, response) => {
   }
 
   if (request.method !== "POST") {
-    response.setHeader("Allow", "GET, POST");
+    response.setHeader("Allow", "GET, POST, OPTIONS");
     return sendJson(response, 405, { error: "Метод не підтримується" });
   }
 

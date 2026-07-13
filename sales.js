@@ -379,8 +379,12 @@ const money = new Intl.NumberFormat("uk-UA", {
   maximumFractionDigits: 0,
 });
 
+const checkoutApiUrl = window.location.protocol === "file:"
+  ? "https://cakelovely-cms.vercel.app/api/checkout"
+  : "/api/checkout";
+
 async function requestCheckout(payload) {
-  const response = await fetch("/api/checkout", {
+  const response = await fetch(checkoutApiUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -446,9 +450,7 @@ function renderWorkspace() {
 }
 
 async function loadCitySales(cityId) {
-  if (window.location.protocol === "file:") return;
-
-  const response = await fetch(`/api/checkout?city=${encodeURIComponent(cityId)}`);
+  const response = await fetch(`${checkoutApiUrl}?city=${encodeURIComponent(cityId)}`);
   if (!response.ok) throw new Error("Не вдалося завантажити продажі філії");
   const result = await response.json();
   state.sales = (result.sales || []).map(normalizeSale);
