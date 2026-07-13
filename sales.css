@@ -1013,6 +1013,79 @@ body::before {
   min-height: 39px;
 }
 
+.employee-discount-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  color: var(--color-slate);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+}
+
+.employee-discount-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.employee-discount-copy strong {
+  color: var(--color-ink);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.employee-discount-copy small {
+  color: var(--color-muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.employee-discount-toggle input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.employee-discount-control {
+  position: relative;
+  width: 46px;
+  height: 26px;
+  flex: 0 0 auto;
+  border-radius: 5px;
+  background: var(--color-soft);
+  transition: background-color 180ms ease;
+}
+
+.employee-discount-control::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(10, 37, 64, 0.18);
+  transition: transform 180ms ease;
+}
+
+.employee-discount-toggle input:checked + .employee-discount-control {
+  background: var(--color-pink);
+}
+
+.employee-discount-toggle input:checked + .employee-discount-control::after {
+  transform: translateX(20px);
+}
+
+.employee-discount-toggle input:focus-visible + .employee-discount-control {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 3px;
+}
+
 .order-head-copy {
   display: grid;
   gap: var(--space-2);
@@ -1132,6 +1205,11 @@ body::before {
   font-size: 11px;
   font-weight: 650;
   line-height: 15px;
+}
+
+.draft-discount-badge {
+  background: var(--color-pink-wash);
+  color: var(--color-pink);
 }
 
 .draft-copy .card-title {
@@ -1898,8 +1976,17 @@ body::before {
   }
 
   .order-head {
+    flex-wrap: wrap;
     min-height: 48px;
     gap: 12px;
+  }
+
+  .employee-discount-toggle {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+    padding: 8px 0 2px;
+    justify-content: space-between;
   }
 
   .order-head-copy {

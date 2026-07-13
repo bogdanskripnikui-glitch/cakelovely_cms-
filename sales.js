@@ -362,6 +362,7 @@ const state = {
   draftOrder: [],
   payment: "cash",
   employee: "",
+  employeeDiscount: false,
   period: "days",
   sales: initialCityId ? salesByCity[initialCityId] : [],
 };
@@ -369,8 +370,14 @@ const state = {
 const money = new Intl.NumberFormat("uk-UA", {
   style: "currency",
   currency: "UAH",
-  maximumFractionDigits: 0,
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
 });
+
+const EMPLOYEE_DISCOUNTS = {
+  cold: 0.35,
+  dessert: 0.4,
+};
 
 const checkoutApiUrl = window.location.protocol === "file:"
   ? "https://cakelovely-cms.vercel.app/api/checkout"
@@ -548,7 +555,15 @@ function showCitySelection() {
 }
 
 function draftOrderTotal() {
-  return state.draftOrder.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  return state.draftOrder.reduce((sum, item) => sum + draftItemTotal(item), 0);
+}
+
+function draftItemDiscount(item) {
+  return state.employeeDiscount ? EMPLOYEE_DISCOUNTS[item.categoryId] || 0 : 0;
+}
+
+function draftItemTotal(item) {
+  return Math.round(item.price * item.quantity * (1 - draftItemDiscount(item)) * 100) / 100;
 }
 
 function draftPositionCount() {
@@ -570,6 +585,8 @@ function resetDraftOrder() {
   state.draftOrder = [];
   state.payment = "cash";
   state.employee = "";
+  state.employeeDiscount = false;
+  els.employeeDiscount.checked = false;
   els.cashInput.value = "";
   els.employeeValue.textContent = "Ім’я співробітника";
   els.employeePicker.classList.remove("is-open");
@@ -589,6 +606,7 @@ function addProductToDraft(product) {
     image: product.image,
     price: product.price,
     badge: product.badge || (product.isDouble ? "Подвійний" : ""),
+    categoryId: state.categoryId,
     type: currentCategory().type,
     quantity: 1,
   });
@@ -621,6 +639,7 @@ const els = {
   employeeTrigger: document.querySelector("#employeeTrigger"),
   employeeValue: document.querySelector("#employeeValue"),
   employeeOptions: document.querySelector("#employeeOptions"),
+  employeeDiscount: document.querySelector("#employeeDiscount"),
   logoutButtons: document.querySelectorAll("[data-logout]"),
   topUpAmount: document.querySelector("#topUpAmount"),
   topUpOrderNumber: document.querySelector("#topUpOrderNumber"),
@@ -751,6 +770,7 @@ function renderOrder() {
   const canCancelOrder = draftPositionCount() > 1;
   els.orderTitle.textContent = "Новий чек";
   els.orderMeta.textContent = draftMetaLabel();
+  els.employeeDiscount.checked = state.employeeDiscount;
   els.draftItems.innerHTML = state.draftOrder
     .map(
       (item) => `
@@ -761,6 +781,7 @@ function renderOrder() {
             <div class="draft-copy">
               <p class="card-title">${item.name}</p>
               ${item.badge ? `<span class="draft-badge">${item.badge}</span>` : ""}
+              ${draftItemDiscount(item) ? `<span class="draft-badge draft-discount-badge">−${Math.round(draftItemDiscount(item) * 100)}%</span>` : ""}
             </div>
             <div class="draft-quantity">
               <button class="draft-step-button draft-step-button-minus" type="button" data-step-item="${item.id}" data-step-action="minus" aria-label="Зменшити ${item.name}">−</button>
@@ -768,7 +789,7 @@ function renderOrder() {
               <button class="draft-step-button draft-step-button-plus" type="button" data-step-item="${item.id}" data-step-action="plus" aria-label="Збільшити ${item.name}">+</button>
             </div>
           </div>
-          <p class="draft-price">${money.format(item.price * item.quantity)}</p>
+          <p class="draft-price">${money.format(draftItemTotal(item))}</p>
         </article>
       `,
     )
@@ -798,7 +819,7 @@ async function confirmOrder() {
         name: item.name,
         type: item.type,
         quantity: item.quantity,
-        total: item.price * item.quantity,
+        total: draftItemTotal(item),
         payment: state.payment,
         employee: state.employee,
         date: checkoutDate,
@@ -1049,6 +1070,11 @@ document.querySelectorAll(".payment-button").forEach((button) => {
 });
 
 els.cashInput.addEventListener("input", renderOrder);
+
+els.employeeDiscount.addEventListener("change", () => {
+  state.employeeDiscount = els.employeeDiscount.checked;
+  renderOrder();
+});
 
 els.draftItems.addEventListener("click", (event) => {
   const removeButton = event.target.closest("[data-remove-item]");
