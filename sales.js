@@ -1065,11 +1065,16 @@ function renderRecentSales() {
     return;
   }
 
+  const isMobile = window.matchMedia("(max-width: 640px)").matches;
+
   els.recentSales.innerHTML = state.sales
     .slice(0, 10)
     .map(
       (sale) => `
-        <div class="sale-row">
+        <div
+          class="sale-row"
+          ${isMobile ? `data-sale-toggle role="button" tabindex="0" aria-expanded="false" aria-controls="sale-details-${sale.id}"` : ""}
+        >
           <div class="sale-product">
             <p class="card-title">${sale.name}</p>
             <p class="card-text">
@@ -1084,10 +1089,38 @@ function renderRecentSales() {
           <p class="price-label sale-quantity">${sale.quantity} шт.</p>
           <p class="product-price sale-total">${money.format(sale.total)}</p>
           <button class="sale-delete" type="button" data-delete="${sale.id}" aria-label="Видалити продаж" title="Видалити"></button>
+          <div class="sale-details" id="sale-details-${sale.id}">
+            <div class="sale-detail">
+              <span class="sale-detail-label">Операція</span>
+              <strong>${sale.type === "adjustment" ? "Доплата" : "Продаж"}</strong>
+            </div>
+            <div class="sale-detail">
+              <span class="sale-detail-label">Оплата</span>
+              <strong>${sale.type === "adjustment" ? "—" : sale.payment === "cash" ? "Готівка" : "Картка"}</strong>
+            </div>
+            <div class="sale-detail">
+              <span class="sale-detail-label">Співробітник</span>
+              <strong>${sale.employee || "—"}</strong>
+            </div>
+            <div class="sale-detail">
+              <span class="sale-detail-label">Кількість</span>
+              <strong>${sale.quantity} шт.</strong>
+            </div>
+            <div class="sale-detail sale-detail-order">
+              <span class="sale-detail-label">Номер замовлення</span>
+              <strong>${sale.orderNumber || "—"}</strong>
+            </div>
+          </div>
         </div>
       `,
     )
     .join("");
+}
+
+function toggleMobileSaleRow(row) {
+  if (!row || !window.matchMedia("(max-width: 640px)").matches) return;
+  const expanded = row.classList.toggle("is-expanded");
+  row.setAttribute("aria-expanded", String(expanded));
 }
 
 els.cityPicker.addEventListener("click", (event) => {
@@ -1289,7 +1322,12 @@ window.matchMedia("(max-width: 640px)").addEventListener("change", renderStats);
 
 els.recentSales.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-delete]");
-  if (!button) return;
+  if (!button) {
+    toggleMobileSaleRow(event.target.closest("[data-sale-toggle]"));
+    return;
+  }
+
+  event.stopPropagation();
   button.disabled = true;
 
   try {
@@ -1302,6 +1340,15 @@ els.recentSales.addEventListener("click", async (event) => {
     button.disabled = false;
     window.alert(`Помилка видалення: ${error.message}`);
   }
+});
+
+els.recentSales.addEventListener("keydown", (event) => {
+  if (event.target.closest("[data-delete]")) return;
+  if (event.key !== "Enter" && event.key !== " ") return;
+  const row = event.target.closest("[data-sale-toggle]");
+  if (!row) return;
+  event.preventDefault();
+  toggleMobileSaleRow(row);
 });
 
 if (initialCityId) {

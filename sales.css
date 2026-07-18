@@ -923,6 +923,10 @@ body::before {
   color: var(--color-slate);
 }
 
+.sale-details {
+  display: none;
+}
+
 .sale-delete {
   position: relative;
   display: inline-flex;
@@ -1007,6 +1011,12 @@ body::before {
   .sale-row {
     grid-template-columns: minmax(0, 1fr) minmax(78px, auto) 44px;
     gap: 10px;
+    cursor: pointer;
+  }
+
+  .sale-row:focus-visible {
+    outline: 2px solid rgba(238, 127, 174, 0.65);
+    outline-offset: 4px;
   }
 
   .sale-employee {
@@ -1031,6 +1041,61 @@ body::before {
   .sale-total {
     justify-self: end;
     font-size: 17px;
+    white-space: nowrap;
+  }
+
+  .sale-details {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 18px;
+    max-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border-top: 1px solid transparent;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition:
+      max-height 240ms ease,
+      margin 240ms ease,
+      padding 240ms ease,
+      border-color 240ms ease,
+      opacity 180ms ease,
+      transform 240ms ease;
+  }
+
+  .sale-row.is-expanded .sale-details {
+    max-height: 220px;
+    margin-top: 4px;
+    padding: 14px 0 4px;
+    border-top-color: rgba(195, 208, 224, 0.5);
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .sale-detail {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .sale-detail-order {
+    grid-column: 1 / -1;
+  }
+
+  .sale-detail-label {
+    color: var(--color-slate);
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  .sale-detail strong {
+    overflow: hidden;
+    color: var(--color-navy);
+    font-size: 15px;
+    line-height: 1.25;
+    text-overflow: ellipsis;
     white-space: nowrap;
   }
 }
