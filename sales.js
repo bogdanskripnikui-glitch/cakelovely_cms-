@@ -78,7 +78,17 @@ const categories = [
         id: "americano",
         name: "Americano",
         price: 50,
+        group: "americano",
+        badge: "Класичний",
         image: "IMG/Амерікано.png",
+      },
+      {
+        id: "americano-milk",
+        name: "Americano",
+        price: 55,
+        group: "americano",
+        badge: "З молоком",
+        image: "IMG/AmericanoMilk.png",
       },
       {
         id: "cappuccino",
@@ -330,8 +340,13 @@ const categories = [
   },
 ];
 
-const CITY_STORAGE_KEY = "cake-lovely-city";
-const SESSION_STORAGE_KEY = "cake-lovely-session";
+const IS_LOCAL_MODE =
+  window.location.protocol === "file:" ||
+  ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+const STORAGE_SUFFIX = IS_LOCAL_MODE ? "-local" : "";
+const CITY_STORAGE_KEY = `cake-lovely-city${STORAGE_SUFFIX}`;
+const SESSION_STORAGE_KEY = `cake-lovely-session${STORAGE_SUFFIX}`;
+const LOCAL_SALES_STORAGE_KEY = "cake-lovely-local-sales";
 
 const cities = {
   kharkiv: {
@@ -351,10 +366,21 @@ let authToken = localStorage.getItem(SESSION_STORAGE_KEY) || "";
 let pendingCityId = null;
 const initialCityId = cities[savedCityId] && authToken ? savedCityId : null;
 
-const salesByCity = {
-  kharkiv: [],
-  lutsk: [],
-};
+function readLocalSales() {
+  if (!IS_LOCAL_MODE) return { kharkiv: [], lutsk: [] };
+
+  try {
+    const storedSales = JSON.parse(localStorage.getItem(LOCAL_SALES_STORAGE_KEY) || "{}");
+    return {
+      kharkiv: Array.isArray(storedSales.kharkiv) ? storedSales.kharkiv : [],
+      lutsk: Array.isArray(storedSales.lutsk) ? storedSales.lutsk : [],
+    };
+  } catch {
+    return { kharkiv: [], lutsk: [] };
+  }
+}
+
+const salesByCity = readLocalSales();
 
 const state = {
   cityId: initialCityId,
@@ -374,17 +400,25 @@ const money = new Intl.NumberFormat("uk-UA", {
   maximumFractionDigits: 2,
 });
 
+function formatResponsiveMoney(value) {
+  if (!window.matchMedia("(max-width: 640px)").matches) return money.format(value);
+
+  const compactValue = new Intl.NumberFormat("uk-UA", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+    useGrouping: false,
+  }).format(value);
+
+  return compactValue.length >= 4 ? `${compactValue.slice(0, 4)}...` : `${compactValue} г.`;
+}
+
 const EMPLOYEE_DISCOUNTS = {
   cold: 0.35,
   dessert: 0.4,
 };
 
-const checkoutApiUrl = window.location.protocol === "file:"
-  ? "https://cakelovely-cms.vercel.app/api/checkout"
-  : "/api/checkout";
-const authApiUrl = window.location.protocol === "file:"
-  ? "https://cakelovely-cms.vercel.app/api/auth"
-  : "/api/auth";
+const checkoutApiUrl = "/api/checkout";
+const authApiUrl = "/api/auth";
 
 function authorizedHeaders(includeContentType = false) {
   return {
@@ -394,6 +428,12 @@ function authorizedHeaders(includeContentType = false) {
 }
 
 async function authenticateCity(city, password) {
+  if (IS_LOCAL_MODE) {
+    authToken = `local:${city}`;
+    localStorage.setItem(SESSION_STORAGE_KEY, authToken);
+    return city;
+  }
+
   const response = await fetch(authApiUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -407,12 +447,22 @@ async function authenticateCity(city, password) {
 }
 
 async function verifySession(city) {
+  if (IS_LOCAL_MODE) return authToken === `local:${city}`;
+
   const response = await fetch(authApiUrl, { headers: authorizedHeaders() });
   const result = await response.json().catch(() => ({}));
   return response.ok && result.city === city;
 }
 
 async function requestCheckout(payload) {
+  if (IS_LOCAL_MODE) {
+    return {
+      ...payload,
+      id: crypto.randomUUID(),
+      date: payload.date || new Date().toISOString(),
+    };
+  }
+
   const response = await fetch(checkoutApiUrl, {
     method: "POST",
     headers: authorizedHeaders(true),
@@ -428,6 +478,8 @@ async function requestCheckout(payload) {
 }
 
 async function deleteCheckout(id) {
+  if (IS_LOCAL_MODE) return;
+
   const url = `${checkoutApiUrl}?id=${encodeURIComponent(id)}&city=${encodeURIComponent(state.cityId)}`;
   const response = await fetch(url, { method: "DELETE", headers: authorizedHeaders() });
   const result = await response.json().catch(() => ({}));
@@ -468,6 +520,12 @@ function normalizeSale(sale) {
   };
 }
 
+function persistLocalSales() {
+  if (!IS_LOCAL_MODE) return;
+  salesByCity[state.cityId] = state.sales;
+  localStorage.setItem(LOCAL_SALES_STORAGE_KEY, JSON.stringify(salesByCity));
+}
+
 function renderEmployeeOptions() {
   const employees = cities[state.cityId]?.employees || [];
   els.employeeOptions.innerHTML = employees
@@ -487,6 +545,12 @@ function renderWorkspace() {
 }
 
 async function loadCitySales(cityId) {
+  if (IS_LOCAL_MODE) {
+    state.sales = (salesByCity[cityId] || []).map(normalizeSale);
+    salesByCity[cityId] = state.sales;
+    return;
+  }
+
   const response = await fetch(`${checkoutApiUrl}?city=${encodeURIComponent(cityId)}`, { headers: authorizedHeaders() });
   if (!response.ok) {
     const error = new Error(response.status === 401 ? "Сесія завершена" : "Не вдалося завантажити продажі філії");
@@ -590,8 +654,10 @@ function resetDraftOrder() {
   state.employeeDiscount = false;
   els.employeeDiscount.checked = false;
   els.cashInput.value = "";
-  els.employeeValue.textContent = "Ім’я співробітника";
+  els.employeeValue.innerHTML = 'Ім’я співробітника <span class="required-mark" aria-hidden="true">*</span>';
   els.employeePicker.classList.remove("is-open");
+  els.employeePicker.classList.remove("is-invalid");
+  els.employeeTrigger.removeAttribute("aria-invalid");
   els.employeeTrigger.setAttribute("aria-expanded", "false");
 }
 
@@ -644,6 +710,7 @@ const els = {
   employeeDiscount: document.querySelector("#employeeDiscount"),
   logoutButtons: document.querySelectorAll("[data-logout]"),
   topUpAmount: document.querySelector("#topUpAmount"),
+  topUpAmountError: document.querySelector("#topUpAmountError"),
   topUpOrderNumber: document.querySelector("#topUpOrderNumber"),
   changeValue: document.querySelector("#changeValue"),
   changeRow: document.querySelector("#changeRow"),
@@ -724,20 +791,23 @@ function renderCategories() {
 }
 
 function renderProducts() {
-  const items = currentCategory().items;
+  const category = currentCategory();
+  const items = category.items;
   const renderedGroups = new Set();
-  const productCard = (product) => `
+  const productCard = (product) => {
+    return `
         <button class="product-card" type="button" data-product="${product.id}">
           <span class="product-media">
             <img class="product-image" src="${product.image}" alt="${product.name}" />
             ${product.isDouble || product.badge ? `<span class="product-badge">${product.badge || "Подвійний"}</span>` : ""}
           </span>
           <div>
-            <h2 class="card-title">${product.name}</h2>
+            <h2 class="card-title${product.name.length > 16 ? " is-adaptive-title" : ""}">${product.name}</h2>
             <p class="product-price">${money.format(product.price)}</p>
           </div>
         </button>
-  `;
+    `;
+  };
 
   els.productGrid.innerHTML = items
     .map((product) => {
@@ -764,6 +834,8 @@ function openOrder(product) {
 function openTopUp() {
   els.topUpOrderNumber.value = "";
   els.topUpAmount.value = "";
+  els.topUpAmount.removeAttribute("aria-invalid");
+  els.topUpAmountError.classList.remove("is-visible");
   els.topUpDialog.showModal();
 }
 
@@ -812,6 +884,13 @@ function renderOrder() {
 
 async function confirmOrder() {
   if (!draftLineCount()) return;
+  if (!state.employee) {
+    els.employeePicker.classList.add("is-invalid", "is-open");
+    els.employeeTrigger.setAttribute("aria-invalid", "true");
+    els.employeeTrigger.setAttribute("aria-expanded", "true");
+    els.employeeTrigger.focus();
+    return;
+  }
 
   const checkoutDate = new Date().toISOString();
   const createdSales = await Promise.all(
@@ -832,6 +911,7 @@ async function confirmOrder() {
   createdSales.reverse().forEach((sale) => {
     state.sales.unshift(normalizeSale(sale));
   });
+  persistLocalSales();
 
   resetDraftOrder();
   els.orderDialog.close();
@@ -840,7 +920,12 @@ async function confirmOrder() {
 
 async function confirmTopUp() {
   const amount = Number(els.topUpAmount.value || 0);
-  if (!amount) return;
+  if (amount <= 0) {
+    els.topUpAmount.setAttribute("aria-invalid", "true");
+    els.topUpAmountError.classList.add("is-visible");
+    els.topUpAmount.focus();
+    return;
+  }
   const orderNumber = els.topUpOrderNumber.value.trim();
 
   const sale = await requestCheckout({
@@ -855,6 +940,7 @@ async function confirmTopUp() {
     date: new Date().toISOString(),
   });
   state.sales.unshift(normalizeSale(sale));
+  persistLocalSales();
   els.topUpDialog.close();
   renderStats();
 }
@@ -908,9 +994,12 @@ function renderStats() {
   els.drinksSoldLabel.textContent = `Напої ${periodLabel}`;
   els.dessertsSoldLabel.textContent = `Десерти ${periodLabel}`;
   els.totalRevenueLabel.textContent = `Виручка ${periodLabel}`;
-  els.totalRevenue.textContent = money.format(isDailyPeriod ? todayRevenue : monthRevenue);
+  const displayedRevenue = isDailyPeriod ? todayRevenue : monthRevenue;
+  els.totalRevenue.textContent = formatResponsiveMoney(displayedRevenue);
+  els.totalRevenue.title = money.format(displayedRevenue);
   els.bestSeller.textContent = bestSeller;
   els.todayRevenue.textContent = money.format(todayRevenue);
+  els.todayRevenue.title = money.format(todayRevenue);
   els.todayDrinks.textContent = todaySales.filter((sale) => sale.type === "drink").reduce((sum, sale) => sum + sale.quantity, 0);
   els.todayDesserts.textContent = todaySales.filter((sale) => sale.type === "dessert").reduce((sum, sale) => sum + sale.quantity, 0);
   renderChart();
@@ -918,7 +1007,15 @@ function renderStats() {
 }
 
 function renderChart() {
-  const points = state.period === "days" ? buildDayPoints() : buildMonthPoints();
+  const allPoints = state.period === "days" ? buildDayPoints() : buildMonthPoints();
+  const isMobileChart = window.matchMedia("(max-width: 640px)").matches;
+  const mobileDayLabels = ["Позавчора", "Вчора", "Сьогодні"];
+  const points = isMobileChart
+    ? allPoints.slice(-3).map((point, index) => ({
+        ...point,
+        label: state.period === "days" ? mobileDayLabels[index] : point.label,
+      }))
+    : allPoints;
   const max = Math.max(...points.map((point) => point.total), 1);
   els.salesChart.style.gridTemplateColumns = `repeat(${points.length}, minmax(0, 1fr))`;
   els.salesChart.innerHTML = points
@@ -973,17 +1070,20 @@ function renderRecentSales() {
     .map(
       (sale) => `
         <div class="sale-row">
-          <div>
+          <div class="sale-product">
             <p class="card-title">${sale.name}</p>
-            <p class="card-text">${new Date(sale.date).toLocaleString("uk-UA", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</p>
+            <p class="card-text">
+              ${new Date(sale.date).toLocaleString("uk-UA", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+              <span class="sale-product-employee">· ${sale.employee || "—"}</span>
+            </p>
           </div>
           <p class="price-label sale-type">${sale.type === "adjustment" ? "Доплата" : "Продаж"}</p>
           <p class="sale-payment">${sale.type === "adjustment" ? "—" : sale.payment === "cash" ? "Готівка" : "Картка"}</p>
           <p class="price-label sale-employee">${sale.employee || "—"}</p>
           <p class="price-label sale-order">${sale.type === "adjustment" ? sale.orderNumber || "—" : "—"}</p>
-          <p class="price-label">${sale.quantity} шт.</p>
-          <p class="product-price">${money.format(sale.total)}</p>
-          <button class="button button-link" type="button" data-delete="${sale.id}">Видалити</button>
+          <p class="price-label sale-quantity">${sale.quantity} шт.</p>
+          <p class="product-price sale-total">${money.format(sale.total)}</p>
+          <button class="sale-delete" type="button" data-delete="${sale.id}" aria-label="Видалити продаж" title="Видалити"></button>
         </div>
       `,
     )
@@ -1125,7 +1225,8 @@ els.employeePicker.addEventListener("click", (event) => {
   if (!option) return;
   state.employee = option.dataset.employee;
   els.employeeValue.textContent = state.employee;
-  els.employeePicker.classList.remove("is-open");
+  els.employeePicker.classList.remove("is-open", "is-invalid");
+  els.employeeTrigger.removeAttribute("aria-invalid");
   els.employeeTrigger.setAttribute("aria-expanded", "false");
 });
 
@@ -1149,11 +1250,20 @@ els.topUpForm.addEventListener("submit", (event) => {
   });
 });
 
+els.topUpAmount.addEventListener("input", () => {
+  if (Number(els.topUpAmount.value || 0) <= 0) return;
+  els.topUpAmount.removeAttribute("aria-invalid");
+  els.topUpAmountError.classList.remove("is-visible");
+});
+
 document.querySelectorAll(".app-view").forEach((button) => {
   button.addEventListener("click", () => {
     switchView(button.dataset.view);
     document.querySelectorAll(".app-menu").forEach((menu) => menu.classList.remove("is-open"));
-    document.querySelectorAll(".mobile-menu-toggle").forEach((toggle) => toggle.setAttribute("aria-expanded", "false"));
+    document.querySelectorAll(".mobile-menu-toggle").forEach((toggle) => {
+      toggle.setAttribute("aria-expanded", "false");
+      toggle.setAttribute("aria-label", "Відкрити меню");
+    });
   });
 });
 
@@ -1162,6 +1272,7 @@ document.querySelectorAll(".mobile-menu-toggle").forEach((toggle) => {
     const menu = toggle.closest(".app-menu");
     const isOpen = menu.classList.toggle("is-open");
     toggle.setAttribute("aria-expanded", String(isOpen));
+    toggle.setAttribute("aria-label", isOpen ? "Закрити меню" : "Відкрити меню");
   });
 });
 
@@ -1174,6 +1285,7 @@ document.querySelectorAll(".period-button").forEach((button) => {
 });
 
 window.addEventListener("scroll", updateSalesStickyState, { passive: true });
+window.matchMedia("(max-width: 640px)").addEventListener("change", renderStats);
 
 els.recentSales.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-delete]");
@@ -1184,6 +1296,7 @@ els.recentSales.addEventListener("click", async (event) => {
     await deleteCheckout(button.dataset.delete);
     state.sales = state.sales.filter((sale) => sale.id !== button.dataset.delete);
     salesByCity[state.cityId] = state.sales;
+    persistLocalSales();
     renderStats();
   } catch (error) {
     button.disabled = false;
