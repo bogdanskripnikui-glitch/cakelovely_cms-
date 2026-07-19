@@ -1947,17 +1947,35 @@ body::before {
   .stats-sticky {
     padding-inline: 16px;
     margin-inline: -16px;
+    z-index: 80;
+    isolation: isolate;
   }
 
   .sales-sticky::before,
   .stats-sticky::before {
     content: "";
-    position: absolute;
-    inset: 0 0 auto;
-    z-index: 2;
-    height: calc(var(--space-6) + 54px + var(--space-4));
-    background: rgb(252, 246, 246);
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 1;
+    height: calc(env(safe-area-inset-top, 0px) + 190px);
+    background: linear-gradient(
+      180deg,
+      rgba(252, 246, 246, 1) 0%,
+      rgba(252, 246, 246, 1) 62%,
+      rgba(252, 246, 246, 0.78) 84%,
+      rgba(252, 246, 246, 0) 100%
+    );
     pointer-events: none;
+  }
+
+  .sales-sticky::before {
+    height: calc(env(safe-area-inset-top, 0px) + 265px);
+  }
+
+  .stats-sticky::before {
+    height: calc(env(safe-area-inset-top, 0px) + 190px);
   }
 
   .app-header {
