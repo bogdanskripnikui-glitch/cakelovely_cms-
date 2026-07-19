@@ -305,6 +305,22 @@ const categories = [
         image: "IMG/MochiSix.png",
       },
       {
+        id: "bento-cake-standard",
+        name: "Бенто торт",
+        price: 650,
+        group: "bento-cake",
+        badge: "Стандарт",
+        image: "IMG/BentoCakeStandard.png",
+      },
+      {
+        id: "bento-cake-xl",
+        name: "Бенто торт",
+        price: 980,
+        group: "bento-cake",
+        badge: "XL",
+        image: "IMG/BentoCakeXL.png",
+      },
+      {
         id: "mousse-cake",
         name: "Мусове тістечко",
         price: 120,
@@ -321,6 +337,80 @@ const categories = [
         name: "Святковий капкейк",
         price: 110,
         image: "IMG/FestiveCupcake.png",
+      },
+    ],
+  },
+  {
+    id: "other",
+    name: "Інше",
+    icon: "spoon",
+    type: "other",
+    items: [
+      {
+        id: "wooden-spoon",
+        name: "Ложка деревʼяна",
+        price: 5,
+        image: "IMG/WoodenSpoon.png",
+      },
+      {
+        id: "postcard",
+        name: "Листівка",
+        price: 20,
+        image: "IMG/Postcard.png",
+      },
+      {
+        id: "candles-small",
+        name: "Свічки",
+        price: 40,
+        group: "candles",
+        badge: "Малі",
+        image: "IMG/CandlesSmall.png",
+      },
+      {
+        id: "candles-large",
+        name: "Свічки",
+        price: 50,
+        group: "candles",
+        badge: "Великі",
+        image: "IMG/CandlesLarge.png",
+      },
+      {
+        id: "small-photo",
+        name: "Маленьке фото",
+        price: 40,
+        image: "IMG/SmallPhoto.png",
+      },
+      {
+        id: "bag-small",
+        name: "Пакет",
+        price: 10,
+        group: "bags",
+        badge: "Маленький",
+        image: "IMG/BagSmall.png",
+      },
+      {
+        id: "bag-large",
+        name: "Пакет",
+        price: 20,
+        group: "bags",
+        badge: "Великий",
+        image: "IMG/BagLarge.png",
+      },
+      {
+        id: "eskimo-box-small",
+        name: "Коробка ескімо",
+        price: 20,
+        group: "eskimo-boxes",
+        badge: "Мала",
+        image: "IMG/EskimoBoxSmall.png",
+      },
+      {
+        id: "eskimo-box-large",
+        name: "Коробка ескімо",
+        price: 50,
+        group: "eskimo-boxes",
+        badge: "Більша",
+        image: "IMG/EskimoBoxLarge.png",
       },
     ],
   },
@@ -381,6 +471,13 @@ function readLocalSales() {
 }
 
 const salesByCity = readLocalSales();
+
+const ASSET_VERSION = "20260719-5";
+
+function versionedAssetUrl(path) {
+  if (/^https?:\/\//.test(path)) return path;
+  return `${path}?v=${ASSET_VERSION}`;
+}
 
 const state = {
   cityId: initialCityId,
@@ -736,6 +833,16 @@ function currentCategory() {
 }
 
 function categoryIcon(kind) {
+  if (kind === "spoon") {
+    return `
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <ellipse cx="8.2" cy="6.4" rx="3.2" ry="4.2" transform="rotate(-38 8.2 6.4)" />
+        <path d="m10.6 9.5 8.2 9.3" />
+        <path d="M18.8 18.8c.6.7.5 1.5-.1 2-.6.5-1.4.4-2-.2l-8-9.1" />
+      </svg>
+    `;
+  }
+
   if (kind === "plus") {
     return `
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -798,7 +905,7 @@ function renderProducts() {
     return `
         <button class="product-card" type="button" data-product="${product.id}">
           <span class="product-media">
-            <img class="product-image" src="${product.image}" alt="${product.name}" />
+            <img class="product-image" src="${versionedAssetUrl(product.image)}" alt="${product.name}" />
             ${product.isDouble || product.badge ? `<span class="product-badge">${product.badge || "Подвійний"}</span>` : ""}
           </span>
           <div>
@@ -850,7 +957,7 @@ function renderOrder() {
       (item) => `
         <article class="draft-item" data-draft-item="${item.id}">
           <button class="draft-remove" type="button" data-remove-item="${item.id}" aria-label="Видалити ${item.name}">×</button>
-          <img class="draft-image" src="${item.image}" alt="${item.name}" />
+          <img class="draft-image" src="${versionedAssetUrl(item.image)}" alt="${item.name}" />
           <div class="draft-info">
             <div class="draft-copy">
               <p class="card-title">${item.name}</p>

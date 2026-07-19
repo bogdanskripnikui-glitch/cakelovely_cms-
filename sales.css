@@ -324,19 +324,11 @@ body::before {
   opacity: 1;
 }
 
-.stats-sticky::after {
-  content: "";
-  position: absolute;
-  inset: 0 0 -180px 0;
-  z-index: 1;
-  pointer-events: none;
-  opacity: 0;
-  background: linear-gradient(180deg, rgba(252, 246, 246, 0.98) 0%, rgba(252, 246, 246, 0.98) 62%, rgba(252, 246, 246, 0) 100%);
-  transition: opacity 140ms ease;
-}
-
+.stats-sticky::after,
 .stats-sticky.is-scrolled::after {
-  opacity: 1;
+  content: none;
+  display: none;
+  opacity: 0;
 }
 
 .app-header,
@@ -589,7 +581,7 @@ body::before {
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--space-7);
   margin-top: var(--space-8);
   margin-bottom: 0;
@@ -694,6 +686,7 @@ body::before {
   padding: 8px;
   border: 1px solid rgba(244, 155, 189, 0.42);
   border-radius: 5px;
+  background: rgba(255, 255, 255, 0.38);
 }
 
 .product-pair--3 {
@@ -1947,39 +1940,71 @@ body::before {
   .stats-sticky {
     padding-inline: 16px;
     margin-inline: -16px;
-    z-index: 80;
+    z-index: 100;
     isolation: isolate;
+    overflow: visible;
   }
 
-  .sales-sticky::before,
-  .stats-sticky::before {
+  .sales-sticky {
+    background: transparent;
+  }
+
+  #salesScreen.is-active::before {
     content: "";
     position: fixed;
     top: 0;
     right: 0;
     left: 0;
-    z-index: 1;
-    height: calc(env(safe-area-inset-top, 0px) + 190px);
+    height: calc(env(safe-area-inset-top, 0px) + 430px);
+    z-index: 70;
     background: linear-gradient(
       180deg,
       rgba(252, 246, 246, 1) 0%,
-      rgba(252, 246, 246, 1) 62%,
-      rgba(252, 246, 246, 0.78) 84%,
+      rgba(252, 246, 246, 1) calc(100% - 175px),
+      rgba(252, 246, 246, 0.96) calc(100% - 82px),
       rgba(252, 246, 246, 0) 100%
     );
     pointer-events: none;
   }
 
-  .sales-sticky::before {
-    height: calc(env(safe-area-inset-top, 0px) + 265px);
+  .sales-sticky::before,
+  .sales-sticky.is-scrolled::before,
+  #statsScreen::before,
+  #statsScreen.is-active::before {
+    content: none !important;
+    display: none !important;
   }
 
-  .stats-sticky::before {
-    height: calc(env(safe-area-inset-top, 0px) + 190px);
+  .sales-sticky::after,
+  .sales-sticky.is-scrolled::after {
+    content: none !important;
+    display: none !important;
+    opacity: 0 !important;
+  }
+
+  .stats-sticky,
+  .stats-sticky.is-scrolled {
+    background: transparent !important;
+  }
+
+  .stats-sticky::before,
+  .stats-sticky::after,
+  .stats-sticky.is-scrolled::before,
+  .stats-sticky.is-scrolled::after {
+    content: none !important;
+    display: none !important;
+    opacity: 0 !important;
+  }
+
+  .sales-sticky > *,
+  .stats-sticky > * {
+    position: relative;
+    z-index: 2;
   }
 
   .app-header {
     position: relative;
+    z-index: 2;
     display: grid;
     grid-template-columns: 54px minmax(0, 1fr) 54px;
     align-items: flex-start;
@@ -2098,6 +2123,8 @@ body::before {
   }
 
   .header-metrics {
+    position: relative;
+    z-index: 2;
     grid-column: 2;
     display: block;
     width: 100%;
@@ -2130,6 +2157,8 @@ body::before {
   }
 
   .category-tabs {
+    position: relative;
+    z-index: 2;
     display: flex;
     width: 100%;
     gap: 12px;
