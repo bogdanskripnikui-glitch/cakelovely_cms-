@@ -242,7 +242,10 @@
         </div>
 
         <div class="order-footer">
-          <button class="cancel-order-button is-hidden" type="button" id="cancelOrder">Скасувати замовлення</button>
+          <button class="cancel-order-button is-hidden" type="button" id="cancelOrder">
+            <span class="button-label-desktop">Скасувати замовлення</span>
+            <span class="button-label-mobile">Скасувати</span>
+          </button>
           <div class="employee-field" id="employeePicker">
             <button class="employee-trigger" id="employeeTrigger" type="button" aria-expanded="false" aria-controls="employeeOptions" aria-required="true">
               <span id="employeeValue">Ім’я співробітника <span class="required-mark" aria-hidden="true">*</span></span>
@@ -250,7 +253,10 @@
             </button>
             <div class="employee-options" id="employeeOptions" role="listbox" aria-label="Співробітник"></div>
           </div>
-          <button class="button button-primary button-large confirm-button" type="submit">Підтвердити замовлення ›</button>
+          <button class="button button-primary button-large confirm-button" type="submit">
+            <span class="button-label-desktop">Підтвердити замовлення ›</span>
+            <span class="button-label-mobile">Підтвердити ›</span>
+          </button>
         </div>
       </form>
     </dialog>
