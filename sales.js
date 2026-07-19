@@ -10,7 +10,7 @@ const categories = [
         name: "Bubble Tea",
         price: 100,
         group: "bubble-tea",
-        image: "IMG/BubbleTea.png",
+        image: "IMG/BubbleTea.webp",
       },
       {
         id: "bubble-tea-double",
@@ -18,14 +18,14 @@ const categories = [
         price: 200,
         group: "bubble-tea",
         isDouble: true,
-        image: "IMG/BubbleTea.png",
+        image: "IMG/BubbleTea.webp",
       },
       {
         id: "lemonade",
         name: "Лимонад",
         price: 80,
         group: "lemonade",
-        image: "IMG/Лимонад.png",
+        image: "IMG/Лимонад.webp",
       },
       {
         id: "lemonade-double",
@@ -33,32 +33,32 @@ const categories = [
         price: 180,
         group: "lemonade",
         isDouble: true,
-        image: "IMG/Лимонад.png",
+        image: "IMG/Лимонад.webp",
       },
       {
         id: "iced-latte",
         name: "Iced Latte",
         price: 90,
-        image: "IMG/IceCoffee.png",
+        image: "IMG/IceCoffee.webp",
       },
       {
         id: "orange-coffee",
         name: "Orange Coffee",
         price: 90,
-        image: "IMG/OrangeCoffee.png",
+        image: "IMG/OrangeCoffee.webp",
       },
       {
         id: "espresso-tonic",
         name: "Espresso Tonic",
         price: 90,
-        image: "IMG/EspressoTonic.png",
+        image: "IMG/EspressoTonic.webp",
       },
       {
         id: "double-coffee",
         name: "Кава x2",
         price: 190,
         isDouble: true,
-        image: "IMG/IceCoffee.png",
+        image: "IMG/IceCoffee.webp",
       },
     ],
   },
@@ -72,7 +72,7 @@ const categories = [
         id: "espresso",
         name: "Espresso",
         price: 45,
-        image: "IMG/Еспрессо.png",
+        image: "IMG/Еспрессо.webp",
       },
       {
         id: "americano",
@@ -80,7 +80,7 @@ const categories = [
         price: 50,
         group: "americano",
         badge: "Класичний",
-        image: "IMG/Амерікано.png",
+        image: "IMG/Амерікано.webp",
       },
       {
         id: "americano-milk",
@@ -88,25 +88,25 @@ const categories = [
         price: 55,
         group: "americano",
         badge: "З молоком",
-        image: "IMG/AmericanoMilk.png",
+        image: "IMG/AmericanoMilk.webp",
       },
       {
         id: "cappuccino",
         name: "Cappuccino",
         price: 65,
-        image: "IMG/Cappuccino.png",
+        image: "IMG/Cappuccino.webp",
       },
       {
         id: "latte",
         name: "Latte",
         price: 75,
-        image: "IMG/Latte.png",
+        image: "IMG/Latte.webp",
       },
       {
         id: "flat-white",
         name: "Flat White",
         price: 70,
-        image: "IMG/Flat White.png",
+        image: "IMG/Flat White.webp",
       },
       {
         id: "cocoa-small",
@@ -114,7 +114,7 @@ const categories = [
         price: 60,
         group: "cocoa",
         badge: "Маленький",
-        image: "IMG/Какао.png",
+        image: "IMG/Какао.webp",
       },
       {
         id: "cocoa-large",
@@ -122,7 +122,7 @@ const categories = [
         price: 70,
         group: "cocoa",
         badge: "Великий",
-        image: "IMG/Какао.png",
+        image: "IMG/Какао.webp",
       },
       {
         id: "hot-chocolate-small",
@@ -130,7 +130,7 @@ const categories = [
         price: 60,
         group: "hot-chocolate",
         badge: "Маленький",
-        image: "IMG/HotChocolate.png",
+        image: "IMG/HotChocolate.webp",
       },
       {
         id: "hot-chocolate-large",
@@ -138,31 +138,31 @@ const categories = [
         price: 70,
         group: "hot-chocolate",
         badge: "Великий",
-        image: "IMG/HotChocolate.png",
+        image: "IMG/HotChocolate.webp",
       },
       {
         id: "tea-bag",
         name: "Чай пакетований",
         price: 40,
-        image: "IMG/TeaBag.png",
+        image: "IMG/TeaBag.webp",
       },
       {
         id: "fruit-tea",
         name: "Чай фруктовий",
         price: 65,
-        image: "IMG/FruitTea.png",
+        image: "IMG/FruitTea.webp",
       },
       {
         id: "honey",
         name: "Мед",
         price: 10,
-        image: "IMG/Honey.png",
+        image: "IMG/Honey.webp",
       },
       {
         id: "marshmallow",
         name: "Маршмелоу",
         price: 10,
-        image: "IMG/Marshmallow.png",
+        image: "IMG/Marshmallow.webp",
       },
     ],
   },
@@ -176,19 +176,19 @@ const categories = [
         id: "strawberry-pot",
         name: "Горщик з полуницею",
         price: 110,
-        image: "IMG/StrawberryPot.png",
+        image: "IMG/StrawberryPot.webp",
       },
       {
         id: "eskimo",
         name: "Ескімо",
         price: 70,
-        image: "IMG/Eskimo.png",
+        image: "IMG/Eskimo.webp",
       },
       {
         id: "trifle",
         name: "Трайфли",
         price: 110,
-        image: "IMG/Trifle.png",
+        image: "IMG/Trifle.webp",
       },
       {
         id: "tiramisu-classic",
@@ -196,7 +196,7 @@ const categories = [
         price: 110,
         group: "tiramisu",
         badge: "Класичний",
-        image: "IMG/TiramisuClassic.png",
+        image: "IMG/TiramisuClassic.webp",
       },
       {
         id: "tiramisu-chocolate",
@@ -204,7 +204,7 @@ const categories = [
         price: 110,
         group: "tiramisu",
         badge: "Шоколадний",
-        image: "IMG/TiramisuChocolate.png",
+        image: "IMG/TiramisuChocolate.webp",
       },
       {
         id: "tiramisu-raspberry",
@@ -212,7 +212,7 @@ const categories = [
         price: 110,
         group: "tiramisu",
         badge: "Малиновий",
-        image: "IMG/TiramisuRaspberry.png",
+        image: "IMG/TiramisuRaspberry.webp",
       },
       {
         id: "tiramisu-strawberry",
@@ -220,7 +220,7 @@ const categories = [
         price: 110,
         group: "tiramisu",
         badge: "Полуничний",
-        image: "IMG/TiramisuStrawberry.png",
+        image: "IMG/TiramisuStrawberry.webp",
       },
       {
         id: "napoleon-classic",
@@ -228,7 +228,7 @@ const categories = [
         price: 110,
         group: "napoleon",
         badge: "Класичний",
-        image: "IMG/NapoleonClassic.png",
+        image: "IMG/NapoleonClassic.webp",
       },
       {
         id: "napoleon-pistachio",
@@ -236,7 +236,7 @@ const categories = [
         price: 110,
         group: "napoleon",
         badge: "Фісташковий",
-        image: "IMG/NapoleonPistachio.png",
+        image: "IMG/NapoleonPistachio.webp",
       },
       {
         id: "napoleon-chocolate",
@@ -244,7 +244,7 @@ const categories = [
         price: 110,
         group: "napoleon",
         badge: "Шоколадний",
-        image: "IMG/NapoleonChocolate.png",
+        image: "IMG/NapoleonChocolate.webp",
       },
       {
         id: "panna-cotta-raspberry",
@@ -252,7 +252,7 @@ const categories = [
         price: 110,
         group: "panna-cotta",
         badge: "Малина",
-        image: "IMG/PannaCottaRaspberry.png",
+        image: "IMG/PannaCottaRaspberry.webp",
       },
       {
         id: "panna-cotta-mango",
@@ -260,25 +260,25 @@ const categories = [
         price: 110,
         group: "panna-cotta",
         badge: "Манго-маракуя",
-        image: "IMG/PannaCottaMangoPassion.png",
+        image: "IMG/PannaCottaMangoPassion.webp",
       },
       {
         id: "honey-cake",
         name: "Медовик",
         price: 110,
-        image: "IMG/HoneyCake.png",
+        image: "IMG/HoneyCake.webp",
       },
       {
         id: "banana-pudding",
         name: "Банановий пудинг",
         price: 110,
-        image: "IMG/BananaPudding.png",
+        image: "IMG/BananaPudding.webp",
       },
       {
         id: "potato-cake",
         name: "Тістечко «Картопля»",
         price: 70,
-        image: "IMG/PotatoCake.png",
+        image: "IMG/PotatoCake.webp",
       },
       {
         id: "mochi-single",
@@ -286,7 +286,7 @@ const categories = [
         price: 60,
         group: "mochi",
         badge: "1 шт.",
-        image: "IMG/MochiOne.png",
+        image: "IMG/MochiOne.webp",
       },
       {
         id: "mochi-four",
@@ -294,7 +294,7 @@ const categories = [
         price: 300,
         group: "mochi",
         badge: "4 шт.",
-        image: "IMG/MochiFour.png",
+        image: "IMG/MochiFour.webp",
       },
       {
         id: "mochi-six",
@@ -302,7 +302,7 @@ const categories = [
         price: 400,
         group: "mochi",
         badge: "6 шт.",
-        image: "IMG/MochiSix.png",
+        image: "IMG/MochiSix.webp",
       },
       {
         id: "bento-cake-standard",
@@ -310,7 +310,7 @@ const categories = [
         price: 650,
         group: "bento-cake",
         badge: "Стандарт",
-        image: "IMG/BentoCakeStandard.png",
+        image: "IMG/BentoCakeStandard.webp",
       },
       {
         id: "bento-cake-xl",
@@ -318,25 +318,25 @@ const categories = [
         price: 980,
         group: "bento-cake",
         badge: "XL",
-        image: "IMG/BentoCakeXL.png",
+        image: "IMG/BentoCakeXL.webp",
       },
       {
         id: "mousse-cake",
         name: "Мусове тістечко",
         price: 120,
-        image: "IMG/MousseCake.png",
+        image: "IMG/MousseCake.webp",
       },
       {
         id: "mousse-torte",
         name: "Мусовий торт",
         price: 650,
-        image: "IMG/MousseTorte.png",
+        image: "IMG/MousseTorte.webp",
       },
       {
         id: "festive-cupcake",
         name: "Святковий капкейк",
         price: 110,
-        image: "IMG/FestiveCupcake.png",
+        image: "IMG/FestiveCupcake.webp",
       },
     ],
   },
@@ -350,13 +350,13 @@ const categories = [
         id: "wooden-spoon",
         name: "Ложка деревʼяна",
         price: 5,
-        image: "IMG/WoodenSpoon.png",
+        image: "IMG/WoodenSpoon.webp",
       },
       {
         id: "postcard",
         name: "Листівка",
         price: 20,
-        image: "IMG/Postcard.png",
+        image: "IMG/Postcard.webp",
       },
       {
         id: "candles-small",
@@ -364,7 +364,7 @@ const categories = [
         price: 40,
         group: "candles",
         badge: "Малі",
-        image: "IMG/CandlesSmall.png",
+        image: "IMG/CandlesSmall.webp",
       },
       {
         id: "candles-large",
@@ -372,13 +372,13 @@ const categories = [
         price: 50,
         group: "candles",
         badge: "Великі",
-        image: "IMG/CandlesLarge.png",
+        image: "IMG/CandlesLarge.webp",
       },
       {
         id: "small-photo",
         name: "Маленьке фото",
         price: 40,
-        image: "IMG/SmallPhoto.png",
+        image: "IMG/SmallPhoto.webp",
       },
       {
         id: "bag-small",
@@ -386,7 +386,7 @@ const categories = [
         price: 10,
         group: "bags",
         badge: "Маленький",
-        image: "IMG/BagSmall.png",
+        image: "IMG/BagSmall.webp",
       },
       {
         id: "bag-large",
@@ -394,7 +394,7 @@ const categories = [
         price: 20,
         group: "bags",
         badge: "Великий",
-        image: "IMG/BagLarge.png",
+        image: "IMG/BagLarge.webp",
       },
       {
         id: "eskimo-box-small",
@@ -402,7 +402,7 @@ const categories = [
         price: 20,
         group: "eskimo-boxes",
         badge: "Мала",
-        image: "IMG/EskimoBoxSmall.png",
+        image: "IMG/EskimoBoxSmall.webp",
       },
       {
         id: "eskimo-box-large",
@@ -410,7 +410,7 @@ const categories = [
         price: 50,
         group: "eskimo-boxes",
         badge: "Більша",
-        image: "IMG/EskimoBoxLarge.png",
+        image: "IMG/EskimoBoxLarge.webp",
       },
     ],
   },
@@ -472,7 +472,7 @@ function readLocalSales() {
 
 const salesByCity = readLocalSales();
 
-const ASSET_VERSION = "20260720-7";
+const ASSET_VERSION = "20260720-8";
 
 function versionedAssetUrl(path) {
   if (/^https?:\/\//.test(path)) return path;
@@ -937,7 +937,7 @@ function renderProducts() {
     return `
         <button class="product-card" type="button" data-product="${product.id}">
           <span class="product-media">
-            <img class="product-image" src="${versionedAssetUrl(product.image)}" alt="${product.name}" />
+            <img class="product-image" src="${versionedAssetUrl(product.image)}" alt="${product.name}" loading="lazy" decoding="async" />
             ${product.isDouble || product.badge ? `<span class="product-badge">${product.badge || "Подвійний"}</span>` : ""}
           </span>
           <div>
@@ -989,7 +989,7 @@ function renderOrder() {
       (item) => `
         <article class="draft-item" data-draft-item="${item.id}">
           <button class="draft-remove" type="button" data-remove-item="${item.id}" aria-label="Видалити ${item.name}">×</button>
-          <img class="draft-image" src="${versionedAssetUrl(item.image)}" alt="${item.name}" />
+          <img class="draft-image" src="${versionedAssetUrl(item.image)}" alt="${item.name}" decoding="async" />
           <div class="draft-info">
             <div class="draft-copy">
               <p class="card-title">${item.name}</p>
