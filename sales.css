@@ -2210,13 +2210,13 @@ body::before {
     top: 0;
     right: 0;
     left: 0;
-    height: calc(env(safe-area-inset-top, 0px) + 430px);
+    height: calc(env(safe-area-inset-top, 0px) + 230px);
     z-index: 1;
     background: linear-gradient(
       180deg,
       rgba(252, 246, 246, 1) 0%,
-      rgba(252, 246, 246, 1) calc(100% - 175px),
-      rgba(252, 246, 246, 0.96) calc(100% - 82px),
+      rgba(252, 246, 246, 1) calc(100% - 82px),
+      rgba(252, 246, 246, 0.96) calc(100% - 38px),
       rgba(252, 246, 246, 0) 100%
     );
     pointer-events: none;
