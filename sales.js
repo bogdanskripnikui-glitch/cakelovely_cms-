@@ -472,7 +472,7 @@ function readLocalSales() {
 
 const salesByCity = readLocalSales();
 
-const ASSET_VERSION = "20260719-5";
+const ASSET_VERSION = "20260720-7";
 
 function versionedAssetUrl(path) {
   if (/^https?:\/\//.test(path)) return path;
@@ -487,6 +487,8 @@ const state = {
   employee: "",
   employeeDiscount: false,
   period: "days",
+  salesDate: dateInputValue(new Date()),
+  salesCalendarMonth: monthStart(new Date()),
   sales: initialCityId ? salesByCity[initialCityId] : [],
 };
 
@@ -509,9 +511,28 @@ function formatResponsiveMoney(value) {
   return compactValue.length >= 4 ? `${compactValue.slice(0, 4)}...` : `${compactValue} г.`;
 }
 
+function dateInputValue(date) {
+  const localDate = new Date(date);
+  localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
+  return localDate.toISOString().slice(0, 10);
+}
+
+function parseDateInput(value) {
+  return new Date(`${value}T00:00:00`);
+}
+
+function monthStart(date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function formatSalesDate(value) {
+  return parseDateInput(value).toLocaleDateString("uk-UA", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
 const EMPLOYEE_DISCOUNTS = {
-  cold: 0.35,
+  cold: 0.5,
   dessert: 0.4,
+  "bento-cake": 0.35,
 };
 
 const checkoutApiUrl = "/api/checkout";
@@ -721,6 +742,7 @@ function draftOrderTotal() {
 
 function draftItemDiscount(item) {
   if (!state.employeeDiscount) return 0;
+  if (item.group && EMPLOYEE_DISCOUNTS[item.group]) return EMPLOYEE_DISCOUNTS[item.group];
   if (item.type === "dessert") return EMPLOYEE_DISCOUNTS.dessert;
   return EMPLOYEE_DISCOUNTS[item.categoryId] || 0;
 }
@@ -771,6 +793,7 @@ function addProductToDraft(product) {
     image: product.image,
     price: product.price,
     badge: product.badge || (product.isDouble ? "Подвійний" : ""),
+    group: product.group || "",
     categoryId: state.categoryId,
     type: currentCategory().type,
     quantity: 1,
@@ -826,6 +849,15 @@ const els = {
   todayDesserts: document.querySelector("#todayDesserts"),
   salesChart: document.querySelector("#salesChart"),
   recentSales: document.querySelector("#recentSales"),
+  salesDatePicker: document.querySelector("#salesDatePicker"),
+  salesDateTrigger: document.querySelector("#salesDateTrigger"),
+  salesDateValue: document.querySelector("#salesDateValue"),
+  salesCalendar: document.querySelector("#salesCalendar"),
+  salesCalendarTitle: document.querySelector("#salesCalendarTitle"),
+  salesCalendarGrid: document.querySelector("#salesCalendarGrid"),
+  salesCalendarPrev: document.querySelector("#salesCalendarPrev"),
+  salesCalendarNext: document.querySelector("#salesCalendarNext"),
+  salesCalendarToday: document.querySelector("#salesCalendarToday"),
 };
 
 function currentCategory() {
@@ -1166,16 +1198,73 @@ function buildMonthPoints() {
   });
 }
 
+function setSalesDate(value) {
+  state.salesDate = value;
+  state.salesCalendarMonth = monthStart(parseDateInput(value));
+  closeSalesCalendar();
+  renderRecentSales();
+}
+
+function toggleSalesCalendar(forceOpen) {
+  const shouldOpen = typeof forceOpen === "boolean" ? forceOpen : els.salesCalendar.hidden;
+  els.salesCalendar.hidden = !shouldOpen;
+  els.salesDateTrigger.setAttribute("aria-expanded", String(shouldOpen));
+  if (shouldOpen) renderSalesCalendar();
+}
+
+function closeSalesCalendar() {
+  els.salesCalendar.hidden = true;
+  els.salesDateTrigger.setAttribute("aria-expanded", "false");
+}
+
+function renderSalesCalendar() {
+  els.salesDateValue.textContent = formatSalesDate(state.salesDate);
+  els.salesCalendarTitle.textContent = state.salesCalendarMonth.toLocaleDateString("uk-UA", {
+    month: "long",
+    year: "numeric",
+  });
+
+  const firstDay = monthStart(state.salesCalendarMonth);
+  const gridStart = new Date(firstDay);
+  gridStart.setDate(firstDay.getDate() - ((firstDay.getDay() + 6) % 7));
+  const selected = state.salesDate;
+  const today = dateInputValue(new Date());
+
+  els.salesCalendarGrid.innerHTML = Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(gridStart);
+    date.setDate(gridStart.getDate() + index);
+    const value = dateInputValue(date);
+    const isMuted = date.getMonth() !== state.salesCalendarMonth.getMonth();
+    return `
+      <button
+        class="sales-calendar-day${isMuted ? " is-muted" : ""}${value === selected ? " is-selected" : ""}${value === today ? " is-today" : ""}"
+        type="button"
+        data-sales-date="${value}"
+      >
+        ${date.getDate()}
+      </button>
+    `;
+  }).join("");
+}
+
 function renderRecentSales() {
+  renderSalesCalendar();
+
   if (!state.sales.length) {
     els.recentSales.innerHTML = `<p class="card-text">Продажів поки немає.</p>`;
     return;
   }
 
   const isMobile = window.matchMedia("(max-width: 640px)").matches;
+  const visibleSales = state.sales.filter((sale) => dateInputValue(sale.date) === state.salesDate);
 
-  els.recentSales.innerHTML = state.sales
-    .slice(0, 10)
+  if (!visibleSales.length) {
+    const selectedDate = new Date(`${state.salesDate}T00:00:00`);
+    els.recentSales.innerHTML = `<p class="card-text">За ${selectedDate.toLocaleDateString("uk-UA", { day: "2-digit", month: "2-digit", year: "numeric" })} продажів немає.</p>`;
+    return;
+  }
+
+  els.recentSales.innerHTML = visibleSales
     .map(
       (sale) => `
         <div
@@ -1318,6 +1407,30 @@ els.employeeDiscount.addEventListener("change", () => {
   renderOrder();
 });
 
+els.salesDateTrigger.addEventListener("click", () => {
+  toggleSalesCalendar();
+});
+
+els.salesCalendarPrev.addEventListener("click", () => {
+  state.salesCalendarMonth.setMonth(state.salesCalendarMonth.getMonth() - 1);
+  renderSalesCalendar();
+});
+
+els.salesCalendarNext.addEventListener("click", () => {
+  state.salesCalendarMonth.setMonth(state.salesCalendarMonth.getMonth() + 1);
+  renderSalesCalendar();
+});
+
+els.salesCalendarToday.addEventListener("click", () => {
+  setSalesDate(dateInputValue(new Date()));
+});
+
+els.salesCalendarGrid.addEventListener("click", (event) => {
+  const dayButton = event.target.closest("[data-sales-date]");
+  if (!dayButton) return;
+  setSalesDate(dayButton.dataset.salesDate);
+});
+
 els.draftItems.addEventListener("click", (event) => {
   const removeButton = event.target.closest("[data-remove-item]");
   if (removeButton) {
@@ -1376,6 +1489,11 @@ document.addEventListener("click", (event) => {
   els.employeeTrigger.setAttribute("aria-expanded", "false");
 });
 
+document.addEventListener("click", (event) => {
+  if (els.salesDatePicker.contains(event.target)) return;
+  closeSalesCalendar();
+});
+
 els.orderForm.addEventListener("submit", (event) => {
   event.preventDefault();
   confirmOrder().catch((error) => {
@@ -1399,7 +1517,10 @@ els.topUpAmount.addEventListener("input", () => {
 document.querySelectorAll(".app-view").forEach((button) => {
   button.addEventListener("click", () => {
     switchView(button.dataset.view);
-    document.querySelectorAll(".app-menu").forEach((menu) => menu.classList.remove("is-open"));
+    document.querySelectorAll(".app-menu").forEach((menu) => {
+      menu.classList.remove("is-open");
+      menu.closest(".sales-sticky, .stats-sticky")?.classList.remove("is-menu-open");
+    });
     document.querySelectorAll(".mobile-menu-toggle").forEach((toggle) => {
       toggle.setAttribute("aria-expanded", "false");
       toggle.setAttribute("aria-label", "Відкрити меню");
@@ -1411,6 +1532,7 @@ document.querySelectorAll(".mobile-menu-toggle").forEach((toggle) => {
   toggle.addEventListener("click", () => {
     const menu = toggle.closest(".app-menu");
     const isOpen = menu.classList.toggle("is-open");
+    menu.closest(".sales-sticky, .stats-sticky")?.classList.toggle("is-menu-open", isOpen);
     toggle.setAttribute("aria-expanded", String(isOpen));
     toggle.setAttribute("aria-label", isOpen ? "Закрити меню" : "Відкрити меню");
   });

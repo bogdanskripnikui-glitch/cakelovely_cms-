@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./design-system/cardaq-system.css" />
-    <link rel="stylesheet" href="./sales.css?v=20260719-5" />
+    <link rel="stylesheet" href="./sales.css?v=20260720-7" />
   </head>
   <body>
     <div class="platform-loader" id="platformLoader" aria-label="Вибір міста">
@@ -188,7 +188,33 @@
         </article>
 
         <article class="account-card sales-table-card">
-          <h2 class="card-title">Останні продажі</h2>
+          <div class="card-row sales-table-head">
+            <h2 class="card-title">Останні продажі</h2>
+            <div class="sales-date-picker" id="salesDatePicker">
+              <button class="sales-date-trigger" id="salesDateTrigger" type="button" aria-haspopup="dialog" aria-expanded="false">
+                <span class="sales-date-label">Дата</span>
+                <span class="sales-date-value" id="salesDateValue"></span>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M7 3.5v3" />
+                  <path d="M17 3.5v3" />
+                  <path d="M4.5 9h15" />
+                  <rect x="4.5" y="5.5" width="15" height="15" rx="3" />
+                </svg>
+              </button>
+              <div class="sales-calendar" id="salesCalendar" role="dialog" aria-label="Вибір дати продажів" hidden>
+                <div class="sales-calendar-head">
+                  <button class="sales-calendar-nav" id="salesCalendarPrev" type="button" aria-label="Попередній місяць">‹</button>
+                  <p class="sales-calendar-title" id="salesCalendarTitle"></p>
+                  <button class="sales-calendar-nav" id="salesCalendarNext" type="button" aria-label="Наступний місяць">›</button>
+                </div>
+                <div class="sales-calendar-weekdays" aria-hidden="true">
+                  <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Нд</span>
+                </div>
+                <div class="sales-calendar-grid" id="salesCalendarGrid"></div>
+                <button class="sales-calendar-today" id="salesCalendarToday" type="button">Сьогодні</button>
+              </div>
+            </div>
+          </div>
           <div class="sales-table" id="recentSales"></div>
         </article>
       </section>
@@ -282,6 +308,6 @@
       </form>
     </dialog>
 
-    <script src="./sales.js?v=20260719-5"></script>
+    <script src="./sales.js?v=20260720-7"></script>
   </body>
 </html>
