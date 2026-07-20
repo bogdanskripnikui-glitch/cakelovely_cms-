@@ -433,10 +433,14 @@ const categories = [
 const IS_LOCAL_MODE =
   window.location.protocol === "file:" ||
   ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+const TEST_MODE_PASSWORD = "555555";
 const STORAGE_SUFFIX = IS_LOCAL_MODE ? "-local" : "";
 const CITY_STORAGE_KEY = `cake-lovely-city${STORAGE_SUFFIX}`;
 const SESSION_STORAGE_KEY = `cake-lovely-session${STORAGE_SUFFIX}`;
+const TEST_CITY_STORAGE_KEY = "cake-lovely-city-test";
+const TEST_SESSION_STORAGE_KEY = "cake-lovely-session-test";
 const LOCAL_SALES_STORAGE_KEY = "cake-lovely-local-sales";
+const TEST_SALES_STORAGE_KEY = "cake-lovely-test-sales";
 
 const cities = {
   kharkiv: {
@@ -451,16 +455,33 @@ const cities = {
   },
 };
 
-const savedCityId = localStorage.getItem(CITY_STORAGE_KEY);
-let authToken = localStorage.getItem(SESSION_STORAGE_KEY) || "";
+let authToken = localStorage.getItem(TEST_SESSION_STORAGE_KEY) || localStorage.getItem(SESSION_STORAGE_KEY) || "";
 let pendingCityId = null;
+
+function isTestMode() {
+  return authToken.startsWith("test:");
+}
+
+function isOfflineMode() {
+  return IS_LOCAL_MODE || isTestMode();
+}
+
+function activeCityStorageKey() {
+  return isTestMode() ? TEST_CITY_STORAGE_KEY : CITY_STORAGE_KEY;
+}
+
+function activeSalesStorageKey() {
+  return isTestMode() ? TEST_SALES_STORAGE_KEY : LOCAL_SALES_STORAGE_KEY;
+}
+
+const savedCityId = localStorage.getItem(activeCityStorageKey());
 const initialCityId = cities[savedCityId] && authToken ? savedCityId : null;
 
 function readLocalSales() {
-  if (!IS_LOCAL_MODE) return { kharkiv: [], lutsk: [] };
+  if (!isOfflineMode()) return { kharkiv: [], lutsk: [] };
 
   try {
-    const storedSales = JSON.parse(localStorage.getItem(LOCAL_SALES_STORAGE_KEY) || "{}");
+    const storedSales = JSON.parse(localStorage.getItem(activeSalesStorageKey()) || "{}");
     return {
       kharkiv: Array.isArray(storedSales.kharkiv) ? storedSales.kharkiv : [],
       lutsk: Array.isArray(storedSales.lutsk) ? storedSales.lutsk : [],
@@ -472,7 +493,7 @@ function readLocalSales() {
 
 const salesByCity = readLocalSales();
 
-const ASSET_VERSION = "20260720-8";
+const ASSET_VERSION = "20260720-9";
 
 function versionedAssetUrl(path) {
   if (/^https?:\/\//.test(path)) return path;
@@ -552,6 +573,18 @@ async function authenticateCity(city, password) {
     return city;
   }
 
+  if (password === TEST_MODE_PASSWORD) {
+    authToken = `test:${city}`;
+    localStorage.setItem(TEST_SESSION_STORAGE_KEY, authToken);
+    localStorage.setItem(TEST_CITY_STORAGE_KEY, city);
+    localStorage.removeItem(SESSION_STORAGE_KEY);
+    localStorage.removeItem(CITY_STORAGE_KEY);
+    const storedSales = readLocalSales();
+    salesByCity.kharkiv = storedSales.kharkiv;
+    salesByCity.lutsk = storedSales.lutsk;
+    return city;
+  }
+
   const response = await fetch(authApiUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -561,11 +594,14 @@ async function authenticateCity(city, password) {
   if (!response.ok) throw new Error(result.error || "Не вдалося увійти");
   authToken = result.token;
   localStorage.setItem(SESSION_STORAGE_KEY, authToken);
+  localStorage.removeItem(TEST_SESSION_STORAGE_KEY);
+  localStorage.removeItem(TEST_CITY_STORAGE_KEY);
   return result.city;
 }
 
 async function verifySession(city) {
   if (IS_LOCAL_MODE) return authToken === `local:${city}`;
+  if (isTestMode()) return authToken === `test:${city}`;
 
   const response = await fetch(authApiUrl, { headers: authorizedHeaders() });
   const result = await response.json().catch(() => ({}));
@@ -573,7 +609,7 @@ async function verifySession(city) {
 }
 
 async function requestCheckout(payload) {
-  if (IS_LOCAL_MODE) {
+  if (isOfflineMode()) {
     return {
       ...payload,
       id: crypto.randomUUID(),
@@ -596,7 +632,7 @@ async function requestCheckout(payload) {
 }
 
 async function deleteCheckout(id) {
-  if (IS_LOCAL_MODE) return;
+  if (isOfflineMode()) return;
 
   const url = `${checkoutApiUrl}?id=${encodeURIComponent(id)}&city=${encodeURIComponent(state.cityId)}`;
   const response = await fetch(url, { method: "DELETE", headers: authorizedHeaders() });
@@ -639,9 +675,9 @@ function normalizeSale(sale) {
 }
 
 function persistLocalSales() {
-  if (!IS_LOCAL_MODE) return;
+  if (!isOfflineMode()) return;
   salesByCity[state.cityId] = state.sales;
-  localStorage.setItem(LOCAL_SALES_STORAGE_KEY, JSON.stringify(salesByCity));
+  localStorage.setItem(activeSalesStorageKey(), JSON.stringify(salesByCity));
 }
 
 function renderEmployeeOptions() {
@@ -663,7 +699,7 @@ function renderWorkspace() {
 }
 
 async function loadCitySales(cityId) {
-  if (IS_LOCAL_MODE) {
+  if (isOfflineMode()) {
     state.sales = (salesByCity[cityId] || []).map(normalizeSale);
     salesByCity[cityId] = state.sales;
     return;
@@ -695,7 +731,7 @@ async function selectCity(cityId, { persist = true, minimumLoaderTime = 0 } = {}
   state.categoryId = "cold";
   state.period = "days";
   resetDraftOrder();
-  if (persist) localStorage.setItem(CITY_STORAGE_KEY, cityId);
+  if (persist) localStorage.setItem(activeCityStorageKey(), cityId);
   renderWorkspace();
 
   try {
@@ -716,6 +752,8 @@ async function selectCity(cityId, { persist = true, minimumLoaderTime = 0 } = {}
 function showCitySelection() {
   localStorage.removeItem(CITY_STORAGE_KEY);
   localStorage.removeItem(SESSION_STORAGE_KEY);
+  localStorage.removeItem(TEST_CITY_STORAGE_KEY);
+  localStorage.removeItem(TEST_SESSION_STORAGE_KEY);
   authToken = "";
   pendingCityId = null;
   state.cityId = null;
