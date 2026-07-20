@@ -2403,14 +2403,28 @@ body::before {
     opacity: 0 !important;
   }
 
-  .stats-sticky,
-  .stats-sticky.is-scrolled {
+  .stats-sticky {
     background: transparent !important;
   }
 
-  .stats-sticky::before,
+  .stats-sticky.is-scrolled::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: calc(env(safe-area-inset-top, 0px) + 112px);
+    z-index: 1;
+    background: linear-gradient(
+      180deg,
+      rgba(252, 246, 246, 1) 0%,
+      rgba(252, 246, 246, 0.98) calc(100% - 34px),
+      rgba(252, 246, 246, 0) 100%
+    );
+    pointer-events: none;
+  }
+
   .stats-sticky::after,
-  .stats-sticky.is-scrolled::before,
   .stats-sticky.is-scrolled::after {
     content: none !important;
     display: none !important;
