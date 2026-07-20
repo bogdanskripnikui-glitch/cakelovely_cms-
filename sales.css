@@ -13,6 +13,11 @@ body:has(dialog[open]) {
   overscroll-behavior: none;
 }
 
+body.is-breakdown-open {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 .app-header {
   display: flex;
   align-items: center;
@@ -773,6 +778,10 @@ body::before {
   margin-bottom: var(--space-7);
 }
 
+.stats-header-metrics .revenue-badge {
+  min-width: 220px;
+}
+
 .metric-card {
   margin-top: 0;
   min-height: 90px;
@@ -783,12 +792,38 @@ body::before {
   background: var(--color-surface);
 }
 
+.metric-card-button {
+  display: block;
+  width: 100%;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.metric-card-button:hover,
+.metric-card-button:focus-visible,
+.metric-card-button.is-expanded {
+  outline: 2px solid var(--color-pink);
+  outline-offset: 0;
+}
+
 .metrics-grid .account-card {
   border-top: 0;
 }
 
 .metric-card .price-number {
+  font-size: clamp(36px, 2.6vw, 42px);
+  line-height: 1.18;
+  letter-spacing: -0.84px;
   animation: metricNumberIn 420ms ease both;
+}
+
+.metric-card .best-seller-value {
+  overflow: hidden;
+  font-size: clamp(30px, 2.4vw, 36px);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .metric-value {
@@ -796,8 +831,113 @@ body::before {
   align-items: center;
 }
 
+.metric-value--split {
+  gap: 12px;
+}
+
+.metric-part {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.metric-separator {
+  color: var(--color-muted);
+  font-size: clamp(34px, 2.2vw, 38px);
+  font-weight: 650;
+  line-height: 1;
+}
+
 .metric-icon {
   display: none;
+}
+
+.sold-breakdown {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6);
+  margin-bottom: var(--space-7);
+  padding: var(--space-7);
+  border: 0;
+  border-radius: 5px;
+  background: var(--color-surface);
+}
+
+.sold-breakdown-head {
+  display: none;
+}
+
+.sold-breakdown[hidden] {
+  display: none;
+}
+
+.sold-breakdown-column {
+  min-width: 0;
+}
+
+.sold-breakdown-column .card-title {
+  margin-bottom: var(--space-5);
+  font-size: 22px;
+  line-height: 28px;
+}
+
+.sold-breakdown-list {
+  display: grid;
+  gap: 6px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 6px;
+  overscroll-behavior: contain;
+}
+
+.sold-breakdown-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sold-breakdown-list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(243, 138, 178, 0.55);
+}
+
+.sold-breakdown-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 7px 10px;
+  border-radius: 5px;
+  background: var(--color-pink-wash);
+  color: var(--color-ink);
+  font-size: 15px;
+  line-height: 20px;
+}
+
+.sold-breakdown-name {
+  overflow: hidden;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sold-breakdown-quantity,
+.sold-breakdown-total,
+.sold-breakdown-empty {
+  color: var(--color-muted);
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.sold-breakdown-total {
+  color: var(--color-pink);
+}
+
+.sold-breakdown-empty {
+  margin: 0;
+  padding: 10px;
+  border-radius: 5px;
+  background: var(--color-pink-wash);
+  font-size: 15px;
 }
 
 @keyframes metricNumberIn {
@@ -1467,6 +1607,14 @@ body::before {
 
 .top-up-fields .cash-field {
   min-width: 0;
+}
+
+.top-up-payment-switch {
+  width: 100%;
+}
+
+.top-up-employee-field {
+  width: 100%;
 }
 
 .close-button {
@@ -2353,7 +2501,7 @@ body::before {
     width: 100%;
   }
 
-  #salesScreen .app-menu.is-open + .header-metrics {
+  .app-menu.is-open ~ .header-metrics {
     visibility: hidden;
   }
 
@@ -2459,6 +2607,7 @@ body::before {
     overflow-x: auto;
     overscroll-behavior-inline: contain;
     scroll-snap-type: x mandatory;
+    scroll-padding-inline: 13%;
     scrollbar-width: none;
   }
 
@@ -2470,7 +2619,7 @@ body::before {
     flex: 0 0 74%;
     min-height: 82px;
     padding: 10px 14px;
-    scroll-snap-align: start;
+    scroll-snap-align: center;
   }
 
   .category-card-title {
@@ -2570,6 +2719,10 @@ body::before {
     padding: 14px 16px;
   }
 
+  .metric-card-button {
+    display: flex;
+  }
+
   .metric-card .price-label {
     position: absolute;
     width: 1px;
@@ -2585,6 +2738,19 @@ body::before {
     min-width: 0;
     width: 100%;
     gap: 12px;
+  }
+
+  .metric-value--split {
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .metric-part {
+    gap: 8px;
+  }
+
+  .metric-separator {
+    display: none;
   }
 
   .metric-icon {
@@ -2623,11 +2789,64 @@ body::before {
     text-overflow: ellipsis;
   }
 
-  #totalRevenue {
+  #cashRevenue,
+  #cardRevenue {
     overflow: hidden;
     font-size: 22px;
     line-height: 30px;
     text-overflow: ellipsis;
+  }
+
+  .sold-breakdown {
+    position: fixed;
+    inset: 0;
+    z-index: 260;
+    grid-template-columns: 1fr;
+    align-content: start;
+    gap: 18px;
+    margin: 0;
+    padding: calc(env(safe-area-inset-top, 0px) + 18px) 16px calc(env(safe-area-inset-bottom, 0px) + 18px);
+    overflow-y: auto;
+    border-radius: 0;
+  }
+
+  .sold-breakdown-head {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 2px;
+    background: var(--color-surface);
+  }
+
+  .sold-breakdown-head .card-title {
+    margin: 0;
+    font-size: 28px;
+    line-height: 34px;
+  }
+
+  .sold-breakdown-column .card-title {
+    margin-bottom: 10px;
+    font-size: 24px;
+    line-height: 30px;
+  }
+
+  .sold-breakdown-list {
+    max-height: 430px;
+    padding-right: 8px;
+  }
+
+  .sold-breakdown-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    font-size: 14px;
+  }
+
+  .sold-breakdown-total {
+    grid-column: 1 / -1;
   }
 
   .chart {

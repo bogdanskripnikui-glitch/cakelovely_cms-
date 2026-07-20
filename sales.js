@@ -493,7 +493,7 @@ function readLocalSales() {
 
 const salesByCity = readLocalSales();
 
-const ASSET_VERSION = "20260720-10";
+const ASSET_VERSION = "20260720-17";
 
 function versionedAssetUrl(path) {
   if (/^https?:\/\//.test(path)) return path;
@@ -506,8 +506,12 @@ const state = {
   draftOrder: [],
   payment: "cash",
   employee: "",
+  topUpPayment: "cash",
+  topUpEmployee: "",
   employeeDiscount: false,
   period: "days",
+  productsBreakdownOpen: false,
+  breakdownMode: "products",
   salesDate: dateInputValue(new Date()),
   salesCalendarMonth: monthStart(new Date()),
   sales: initialCityId ? salesByCity[initialCityId] : [],
@@ -523,13 +527,13 @@ const money = new Intl.NumberFormat("uk-UA", {
 function formatResponsiveMoney(value) {
   if (!window.matchMedia("(max-width: 640px)").matches) return money.format(value);
 
-  const compactValue = new Intl.NumberFormat("uk-UA", {
+  const mobileValue = new Intl.NumberFormat("uk-UA", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
     useGrouping: false,
   }).format(value);
 
-  return compactValue.length >= 4 ? `${compactValue.slice(0, 4)}...` : `${compactValue} г.`;
+  return `${mobileValue} грн`;
 }
 
 function dateInputValue(date) {
@@ -548,6 +552,15 @@ function monthStart(date) {
 
 function formatSalesDate(value) {
   return parseDateInput(value).toLocaleDateString("uk-UA", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 const EMPLOYEE_DISCOUNTS = {
@@ -682,9 +695,11 @@ function persistLocalSales() {
 
 function renderEmployeeOptions() {
   const employees = cities[state.cityId]?.employees || [];
-  els.employeeOptions.innerHTML = employees
+  const employeeButtons = employees
     .map((employee) => `<button type="button" role="option" data-employee="${employee}">${employee}</button>`)
     .join("");
+  els.employeeOptions.innerHTML = employeeButtons;
+  els.topUpEmployeeOptions.innerHTML = employeeButtons.replaceAll("data-employee=", "data-top-up-employee=");
 }
 
 function renderWorkspace() {
@@ -699,6 +714,7 @@ function renderWorkspace() {
   els.logoutButtons.forEach((button) => {
     button.title = `${cities[state.cityId]?.name || "Місто"}: обрати інше місто`;
   });
+  centerActiveCategory({ behavior: "auto" });
 }
 
 async function loadCitySales(cityId) {
@@ -873,17 +889,33 @@ const els = {
   topUpAmount: document.querySelector("#topUpAmount"),
   topUpAmountError: document.querySelector("#topUpAmountError"),
   topUpOrderNumber: document.querySelector("#topUpOrderNumber"),
+  topUpEmployeePicker: document.querySelector("#topUpEmployeePicker"),
+  topUpEmployeeTrigger: document.querySelector("#topUpEmployeeTrigger"),
+  topUpEmployeeValue: document.querySelector("#topUpEmployeeValue"),
+  topUpEmployeeOptions: document.querySelector("#topUpEmployeeOptions"),
   changeValue: document.querySelector("#changeValue"),
   changeRow: document.querySelector("#changeRow"),
   cashField: document.querySelector("#cashField"),
   salesScreen: document.querySelector("#salesScreen"),
   statsScreen: document.querySelector("#statsScreen"),
+  productsSoldMetric: document.querySelector("#productsSoldMetric"),
+  cashRevenueMetric: document.querySelector("#cashRevenueMetric"),
+  cardRevenueMetric: document.querySelector("#cardRevenueMetric"),
+  productsSoldBreakdown: document.querySelector("#productsSoldBreakdown"),
+  closeProductsBreakdown: document.querySelector("#closeProductsBreakdown"),
+  soldBreakdownTitle: document.querySelector("#soldBreakdownTitle"),
+  soldBreakdownFirstTitle: document.querySelector("#soldBreakdownFirstTitle"),
+  soldBreakdownSecondTitle: document.querySelector("#soldBreakdownSecondTitle"),
+  soldBreakdownFirstList: document.querySelector("#soldBreakdownFirstList"),
+  soldBreakdownSecondList: document.querySelector("#soldBreakdownSecondList"),
   drinksSold: document.querySelector("#drinksSold"),
-  drinksSoldLabel: document.querySelector("#drinksSoldLabel"),
   dessertsSold: document.querySelector("#dessertsSold"),
-  dessertsSoldLabel: document.querySelector("#dessertsSoldLabel"),
-  totalRevenue: document.querySelector("#totalRevenue"),
-  totalRevenueLabel: document.querySelector("#totalRevenueLabel"),
+  productsSoldLabel: document.querySelector("#productsSoldLabel"),
+  cashRevenue: document.querySelector("#cashRevenue"),
+  cashRevenueLabel: document.querySelector("#cashRevenueLabel"),
+  cardRevenue: document.querySelector("#cardRevenue"),
+  cardRevenueLabel: document.querySelector("#cardRevenueLabel"),
+  statsHeaderRevenue: document.querySelector("#statsHeaderRevenue"),
   bestSeller: document.querySelector("#bestSeller"),
   todayRevenue: document.querySelector("#todayRevenue"),
   todayDrinks: document.querySelector("#todayDrinks"),
@@ -968,6 +1000,22 @@ function renderCategories() {
       `,
     )
     .join("");
+  centerActiveCategory();
+}
+
+function centerActiveCategory({ behavior = "smooth" } = {}) {
+  if (!window.matchMedia("(max-width: 640px)").matches) return;
+
+  window.requestAnimationFrame(() => {
+    const activeCategory = els.categoryTabs.querySelector(".category-card.is-active");
+    if (!activeCategory) return;
+
+    const targetLeft = activeCategory.offsetLeft - (els.categoryTabs.clientWidth - activeCategory.clientWidth) / 2;
+    els.categoryTabs.scrollTo({
+      left: Math.max(0, targetLeft),
+      behavior,
+    });
+  });
 }
 
 function renderProducts() {
@@ -1016,6 +1064,15 @@ function openTopUp() {
   els.topUpAmount.value = "";
   els.topUpAmount.removeAttribute("aria-invalid");
   els.topUpAmountError.classList.remove("is-visible");
+  state.topUpPayment = "cash";
+  state.topUpEmployee = "";
+  document.querySelectorAll("[data-top-up-payment]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.topUpPayment === state.topUpPayment);
+  });
+  els.topUpEmployeeValue.innerHTML = 'Ім’я співробітника <span class="required-mark" aria-hidden="true">*</span>';
+  els.topUpEmployeePicker.classList.remove("is-open", "is-invalid");
+  els.topUpEmployeeTrigger.removeAttribute("aria-invalid");
+  els.topUpEmployeeTrigger.setAttribute("aria-expanded", "false");
   els.topUpDialog.showModal();
 }
 
@@ -1100,6 +1157,13 @@ async function confirmOrder() {
 
 async function confirmTopUp() {
   const amount = Number(els.topUpAmount.value || 0);
+  if (!state.topUpEmployee) {
+    els.topUpEmployeePicker.classList.add("is-invalid", "is-open");
+    els.topUpEmployeeTrigger.setAttribute("aria-invalid", "true");
+    els.topUpEmployeeTrigger.setAttribute("aria-expanded", "true");
+    els.topUpEmployeeTrigger.focus();
+    return;
+  }
   if (amount <= 0) {
     els.topUpAmount.setAttribute("aria-invalid", "true");
     els.topUpAmountError.classList.add("is-visible");
@@ -1114,8 +1178,8 @@ async function confirmTopUp() {
     type: "adjustment",
     quantity: 1,
     total: amount,
-    payment: "adjustment",
-    employee: "",
+    payment: state.topUpPayment,
+    employee: state.topUpEmployee,
     orderNumber,
     date: new Date().toISOString(),
   });
@@ -1126,6 +1190,10 @@ async function confirmTopUp() {
 }
 
 function switchView(view) {
+  if (view !== "stats" && state.productsBreakdownOpen) {
+    state.productsBreakdownOpen = false;
+    document.body.classList.remove("is-breakdown-open");
+  }
   els.salesScreen.classList.toggle("is-active", view === "sales");
   els.statsScreen.classList.toggle("is-active", view === "stats");
   document.querySelectorAll(".app-view").forEach((button) => {
@@ -1151,19 +1219,14 @@ function renderStats() {
   });
   const drinks = periodSales.filter((sale) => sale.type === "drink").reduce((sum, sale) => sum + sale.quantity, 0);
   const desserts = periodSales.filter((sale) => sale.type === "dessert").reduce((sum, sale) => sum + sale.quantity, 0);
+  const cashRevenue = periodSales.filter((sale) => sale.payment === "cash").reduce((sum, sale) => sum + sale.total, 0);
+  const cardRevenue = periodSales.filter((sale) => sale.payment === "card").reduce((sum, sale) => sum + sale.total, 0);
+  const periodRevenue = periodSales.reduce((sum, sale) => sum + sale.total, 0);
   const todaySales = state.sales.filter((sale) => {
     const saleDate = new Date(sale.date);
     return `${saleDate.getFullYear()}-${saleDate.getMonth()}-${saleDate.getDate()}` === todayKey;
   });
   const todayRevenue = todaySales.reduce((sum, sale) => sum + sale.total, 0);
-  const monthRevenue = state.sales
-    .filter((sale) => {
-      const saleDate = new Date(sale.date);
-      return saleDate.getMonth() === today.getMonth() && saleDate.getFullYear() === today.getFullYear();
-    })
-    .reduce((sum, sale) => sum + sale.total, 0);
-  const monthNames = ["січні", "лютому", "березні", "квітні", "травні", "червні", "липні", "серпні", "вересні", "жовтні", "листопаді", "грудні"];
-  const periodLabel = isDailyPeriod ? "сьогодні" : `у ${monthNames[today.getMonth()]}`;
   const sellerTotals = state.sales.reduce((totals, sale) => {
     if (sale.employee) totals[sale.employee] = (totals[sale.employee] || 0) + sale.total;
     return totals;
@@ -1171,19 +1234,104 @@ function renderStats() {
   const bestSeller = Object.entries(sellerTotals).sort(([, firstTotal], [, secondTotal]) => secondTotal - firstTotal)[0]?.[0] || "—";
   els.drinksSold.textContent = drinks;
   els.dessertsSold.textContent = desserts;
-  els.drinksSoldLabel.textContent = `Напої ${periodLabel}`;
-  els.dessertsSoldLabel.textContent = `Десерти ${periodLabel}`;
-  els.totalRevenueLabel.textContent = `Виручка ${periodLabel}`;
-  const displayedRevenue = isDailyPeriod ? todayRevenue : monthRevenue;
-  els.totalRevenue.textContent = formatResponsiveMoney(displayedRevenue);
-  els.totalRevenue.title = money.format(displayedRevenue);
+  els.cashRevenue.textContent = formatResponsiveMoney(cashRevenue);
+  els.cashRevenue.title = money.format(cashRevenue);
+  els.cardRevenue.textContent = formatResponsiveMoney(cardRevenue);
+  els.cardRevenue.title = money.format(cardRevenue);
+  els.statsHeaderRevenue.textContent = money.format(periodRevenue);
+  els.statsHeaderRevenue.title = money.format(periodRevenue);
   els.bestSeller.textContent = bestSeller;
   els.todayRevenue.textContent = money.format(todayRevenue);
   els.todayRevenue.title = money.format(todayRevenue);
   els.todayDrinks.textContent = todaySales.filter((sale) => sale.type === "drink").reduce((sum, sale) => sum + sale.quantity, 0);
   els.todayDesserts.textContent = todaySales.filter((sale) => sale.type === "dessert").reduce((sum, sale) => sum + sale.quantity, 0);
+  renderProductsBreakdown(periodSales);
   renderChart();
   renderRecentSales();
+}
+
+function groupedProductSales(sales, type) {
+  return Object.values(
+    sales
+      .filter((sale) => sale.type === type)
+      .reduce((items, sale) => {
+        const key = sale.name;
+        if (!items[key]) items[key] = { name: sale.name, quantity: 0, total: 0 };
+        items[key].quantity += sale.quantity;
+        items[key].total += sale.total;
+        return items;
+      }, {}),
+  ).sort((first, second) => second.quantity - first.quantity || second.total - first.total || first.name.localeCompare(second.name, "uk"));
+}
+
+function groupedRevenueSales(sales) {
+  return Object.values(
+    sales.reduce((items, sale) => {
+      const key = sale.name;
+      if (!items[key]) items[key] = { name: sale.name, quantity: 0, total: 0 };
+      items[key].quantity += sale.quantity;
+      items[key].total += sale.total;
+      return items;
+    }, {}),
+  ).sort((first, second) => second.total - first.total || second.quantity - first.quantity || first.name.localeCompare(second.name, "uk"));
+}
+
+function renderBreakdownList(target, items) {
+  if (!items.length) {
+    target.innerHTML = `<p class="sold-breakdown-empty">Продажів немає</p>`;
+    return;
+  }
+
+  target.innerHTML = items
+    .map(
+      (item) => `
+        <div class="sold-breakdown-row">
+          <span class="sold-breakdown-name">${escapeHtml(item.name)}</span>
+          <span class="sold-breakdown-quantity">${item.quantity} шт.</span>
+          <span class="sold-breakdown-total">${money.format(item.total)}</span>
+        </div>
+      `,
+    )
+    .join("");
+}
+
+function closeProductsBreakdown() {
+  state.productsBreakdownOpen = false;
+  document.body.classList.remove("is-breakdown-open");
+  renderStats();
+}
+
+function openProductsBreakdown(mode) {
+  state.productsBreakdownOpen = state.productsBreakdownOpen && state.breakdownMode === mode ? false : true;
+  state.breakdownMode = mode;
+  renderStats();
+}
+
+function renderProductsBreakdown(periodSales) {
+  els.productsSoldBreakdown.hidden = !state.productsBreakdownOpen;
+  [els.productsSoldMetric, els.cashRevenueMetric, els.cardRevenueMetric].forEach((metric) => {
+    const isExpanded = state.productsBreakdownOpen && metric.dataset.breakdownMode === state.breakdownMode;
+    metric.setAttribute("aria-expanded", String(isExpanded));
+    metric.classList.toggle("is-expanded", isExpanded);
+  });
+  document.body.classList.toggle("is-breakdown-open", state.productsBreakdownOpen);
+  if (!state.productsBreakdownOpen) return;
+
+  if (state.breakdownMode === "cash" || state.breakdownMode === "card") {
+    const paymentSales = periodSales.filter((sale) => sale.payment === state.breakdownMode);
+    els.soldBreakdownTitle.textContent = state.breakdownMode === "cash" ? "Готівка" : "Картка";
+    els.soldBreakdownFirstTitle.textContent = "Продажі";
+    els.soldBreakdownSecondTitle.textContent = "Доплати";
+    renderBreakdownList(els.soldBreakdownFirstList, groupedRevenueSales(paymentSales.filter((sale) => sale.type !== "adjustment")));
+    renderBreakdownList(els.soldBreakdownSecondList, groupedRevenueSales(paymentSales.filter((sale) => sale.type === "adjustment")));
+    return;
+  }
+
+  els.soldBreakdownTitle.textContent = "Продано";
+  els.soldBreakdownFirstTitle.textContent = "Напої";
+  els.soldBreakdownSecondTitle.textContent = "Десерти";
+  renderBreakdownList(els.soldBreakdownFirstList, groupedProductSales(periodSales, "drink"));
+  renderBreakdownList(els.soldBreakdownSecondList, groupedProductSales(periodSales, "dessert"));
 }
 
 function renderChart() {
@@ -1258,6 +1406,12 @@ function closeSalesCalendar() {
   els.salesDateTrigger.setAttribute("aria-expanded", "false");
 }
 
+function paymentLabel(payment) {
+  if (payment === "cash") return "Готівка";
+  if (payment === "card") return "Картка";
+  return "—";
+}
+
 function renderSalesCalendar() {
   els.salesDateValue.textContent = formatSalesDate(state.salesDate);
   els.salesCalendarTitle.textContent = state.salesCalendarMonth.toLocaleDateString("uk-UA", {
@@ -1320,7 +1474,7 @@ function renderRecentSales() {
             </p>
           </div>
           <p class="price-label sale-type">${sale.type === "adjustment" ? "Доплата" : "Продаж"}</p>
-          <p class="sale-payment">${sale.type === "adjustment" ? "—" : sale.payment === "cash" ? "Готівка" : "Картка"}</p>
+          <p class="sale-payment">${paymentLabel(sale.payment)}</p>
           <p class="price-label sale-employee">${sale.employee || "—"}</p>
           <p class="price-label sale-order">${sale.type === "adjustment" ? sale.orderNumber || "—" : "—"}</p>
           <p class="price-label sale-quantity">${sale.quantity} шт.</p>
@@ -1333,7 +1487,7 @@ function renderRecentSales() {
             </div>
             <div class="sale-detail">
               <span class="sale-detail-label">Оплата</span>
-              <strong>${sale.type === "adjustment" ? "—" : sale.payment === "cash" ? "Готівка" : "Картка"}</strong>
+              <strong>${paymentLabel(sale.payment)}</strong>
             </div>
             <div class="sale-detail">
               <span class="sale-detail-label">Співробітник</span>
@@ -1436,8 +1590,18 @@ els.cancelOrder.addEventListener("click", () => {
 
 document.querySelectorAll(".payment-button").forEach((button) => {
   button.addEventListener("click", () => {
+    if (button.dataset.topUpPayment) return;
     state.payment = button.dataset.payment;
     renderOrder();
+  });
+});
+
+document.querySelectorAll("[data-top-up-payment]").forEach((button) => {
+  button.addEventListener("click", () => {
+    state.topUpPayment = button.dataset.topUpPayment;
+    document.querySelectorAll("[data-top-up-payment]").forEach((paymentButton) => {
+      paymentButton.classList.toggle("is-active", paymentButton.dataset.topUpPayment === state.topUpPayment);
+    });
   });
 });
 
@@ -1446,6 +1610,22 @@ els.cashInput.addEventListener("input", renderOrder);
 els.employeeDiscount.addEventListener("change", () => {
   state.employeeDiscount = els.employeeDiscount.checked;
   renderOrder();
+});
+
+els.productsSoldMetric.addEventListener("click", () => {
+  openProductsBreakdown("products");
+});
+
+els.cashRevenueMetric.addEventListener("click", () => {
+  openProductsBreakdown("cash");
+});
+
+els.cardRevenueMetric.addEventListener("click", () => {
+  openProductsBreakdown("card");
+});
+
+els.closeProductsBreakdown.addEventListener("click", () => {
+  closeProductsBreakdown();
 });
 
 els.salesDateTrigger.addEventListener("click", () => {
@@ -1524,10 +1704,28 @@ els.employeePicker.addEventListener("click", (event) => {
   els.employeeTrigger.setAttribute("aria-expanded", "false");
 });
 
+els.topUpEmployeeTrigger.addEventListener("click", () => {
+  const isOpen = els.topUpEmployeePicker.classList.toggle("is-open");
+  els.topUpEmployeeTrigger.setAttribute("aria-expanded", String(isOpen));
+});
+
+els.topUpEmployeePicker.addEventListener("click", (event) => {
+  const option = event.target.closest("[data-top-up-employee]");
+  if (!option) return;
+  state.topUpEmployee = option.dataset.topUpEmployee;
+  els.topUpEmployeeValue.textContent = state.topUpEmployee;
+  els.topUpEmployeePicker.classList.remove("is-open", "is-invalid");
+  els.topUpEmployeeTrigger.removeAttribute("aria-invalid");
+  els.topUpEmployeeTrigger.setAttribute("aria-expanded", "false");
+});
+
 document.addEventListener("click", (event) => {
   if (els.employeePicker.contains(event.target)) return;
   els.employeePicker.classList.remove("is-open");
   els.employeeTrigger.setAttribute("aria-expanded", "false");
+  if (els.topUpEmployeePicker.contains(event.target)) return;
+  els.topUpEmployeePicker.classList.remove("is-open");
+  els.topUpEmployeeTrigger.setAttribute("aria-expanded", "false");
 });
 
 document.addEventListener("click", (event) => {
@@ -1588,7 +1786,10 @@ document.querySelectorAll(".period-button").forEach((button) => {
 });
 
 window.addEventListener("scroll", updateSalesStickyState, { passive: true });
-window.matchMedia("(max-width: 640px)").addEventListener("change", renderStats);
+window.matchMedia("(max-width: 640px)").addEventListener("change", () => {
+  renderStats();
+  centerActiveCategory({ behavior: "auto" });
+});
 
 els.recentSales.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-delete]");
