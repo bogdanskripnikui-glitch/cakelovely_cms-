@@ -493,7 +493,7 @@ function readLocalSales() {
 
 const salesByCity = readLocalSales();
 
-const ASSET_VERSION = "20260720-9";
+const ASSET_VERSION = "20260720-10";
 
 function versionedAssetUrl(path) {
   if (/^https?:\/\//.test(path)) return path;
@@ -693,6 +693,9 @@ function renderWorkspace() {
   renderProducts();
   renderStats();
   updateSalesStickyState();
+  document.querySelectorAll("[data-test-badge]").forEach((badge) => {
+    badge.hidden = !isOfflineMode();
+  });
   els.logoutButtons.forEach((button) => {
     button.title = `${cities[state.cityId]?.name || "Місто"}: обрати інше місто`;
   });

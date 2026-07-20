@@ -516,6 +516,25 @@ body::before {
   gap: var(--space-4);
 }
 
+.test-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 5px;
+  background: #d92d20;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+
+.test-mode-badge[hidden] {
+  display: none;
+}
+
 .header-count-card {
   display: flex;
   align-items: center;
@@ -2410,6 +2429,17 @@ body::before {
     height: 54px;
     min-width: 0;
     padding: 7px 10px;
+  }
+
+  .test-mode-badge {
+    position: absolute;
+    top: 8px;
+    left: 74px;
+    z-index: 4;
+    height: 22px;
+    padding: 0 8px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
   }
 
   .revenue-badge .price-number {
