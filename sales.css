@@ -2803,6 +2803,7 @@ body::before {
     text-overflow: ellipsis;
   }
 
+  .metric-card--split .price-number,
   #cashRevenue,
   #cardRevenue {
     overflow: hidden;
