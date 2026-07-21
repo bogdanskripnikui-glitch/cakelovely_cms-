@@ -54,24 +54,6 @@ body::before {
   background-size: 1px 22px;
 }
 
-body::after {
-  content: "";
-  position: fixed;
-  top: 0;
-  right: 0;
-  left: 0;
-  height: 180px;
-  z-index: 19;
-  pointer-events: none;
-  background: var(--color-page);
-  opacity: 0;
-  transition: opacity 120ms ease;
-}
-
-body.is-page-scrolled::after {
-  opacity: 1;
-}
-
 .platform-loader {
   position: fixed;
   inset: 0;
@@ -2405,22 +2387,32 @@ body.is-page-scrolled::after {
 }
 
 @media (max-width: 640px) {
-  body::after {
-    height: calc(env(safe-area-inset-top, 0px) + 188px);
-    z-index: 90;
+  #salesScreen {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 178px);
+  }
+
+  #statsScreen {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 86px);
   }
 
   .sales-sticky,
   .stats-sticky {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
     padding-inline: 16px;
-    margin-inline: -16px;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 16px);
+    padding-bottom: 16px;
+    margin-inline: 0;
     z-index: 100;
     isolation: isolate;
     overflow: visible;
+    background: var(--color-page);
   }
 
   .sales-sticky {
-    background: transparent;
+    min-height: calc(env(safe-area-inset-top, 0px) + 172px);
   }
 
   .sales-sticky.is-scrolled::before {
@@ -2456,7 +2448,8 @@ body.is-page-scrolled::after {
   }
 
   .stats-sticky {
-    background: transparent !important;
+    min-height: calc(env(safe-area-inset-top, 0px) + 86px);
+    background: var(--color-page) !important;
   }
 
   .stats-sticky.is-scrolled::before {
