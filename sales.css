@@ -312,23 +312,52 @@ body::before {
   background: transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  isolation: isolate;
 }
 
-.sales-sticky::after {
+.sales-sticky::before,
+.stats-sticky::before {
   content: "";
   position: absolute;
-  inset: 0 0 -180px 0;
-  background: linear-gradient(180deg, rgba(252, 246, 246, 0.98) 0%, rgba(252, 246, 246, 0.98) 62%, rgba(252, 246, 246, 0) 100%);
+  top: 0;
+  right: 0;
+  left: 0;
+  height: calc(100% + 170px);
+  background: linear-gradient(
+    180deg,
+    rgba(252, 246, 246, 1) 0%,
+    rgba(252, 246, 246, 1) calc(100% - 96px),
+    rgba(252, 246, 246, 0.96) calc(100% - 44px),
+    rgba(252, 246, 246, 0) 100%
+  );
   pointer-events: none;
   z-index: 1;
   opacity: 0;
   transition: opacity 140ms ease;
 }
 
-.sales-sticky.is-scrolled::after {
+.stats-sticky::before {
+  height: calc(100% + 96px);
+  background: linear-gradient(
+    180deg,
+    rgba(252, 246, 246, 1) 0%,
+    rgba(252, 246, 246, 0.98) calc(100% - 42px),
+    rgba(252, 246, 246, 0) 100%
+  );
+}
+
+.sales-sticky.is-scrolled::before,
+.stats-sticky.is-scrolled::before {
   opacity: 1;
 }
 
+.sales-sticky.is-scrolled,
+.stats-sticky.is-scrolled {
+  background: rgba(252, 246, 246, 1);
+}
+
+.sales-sticky::after,
+.sales-sticky.is-scrolled::after,
 .stats-sticky::after,
 .stats-sticky.is-scrolled::after {
   content: none;
