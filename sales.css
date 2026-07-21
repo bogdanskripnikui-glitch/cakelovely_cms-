@@ -2387,6 +2387,10 @@ body::before {
 }
 
 @media (max-width: 640px) {
+  :root {
+    --mobile-browser-guard: 110px;
+  }
+
   #salesScreen {
     padding-top: calc(env(safe-area-inset-top, 0px) + 178px);
   }
@@ -2398,11 +2402,11 @@ body::before {
   .sales-sticky,
   .stats-sticky {
     position: fixed;
-    top: 0;
+    top: calc(var(--mobile-browser-guard) * -1);
     right: 0;
     left: 0;
     padding-inline: 16px;
-    padding-top: calc(env(safe-area-inset-top, 0px) + 16px);
+    padding-top: calc(env(safe-area-inset-top, 0px) + var(--mobile-browser-guard) + 16px);
     padding-bottom: 16px;
     margin-inline: 0;
     z-index: 100;
@@ -2412,7 +2416,7 @@ body::before {
   }
 
   .sales-sticky {
-    min-height: calc(env(safe-area-inset-top, 0px) + 172px);
+    min-height: calc(env(safe-area-inset-top, 0px) + var(--mobile-browser-guard) + 172px);
   }
 
   .sales-sticky.is-scrolled::before {
@@ -2421,7 +2425,7 @@ body::before {
     top: 0;
     right: 0;
     left: 0;
-    height: calc(env(safe-area-inset-top, 0px) + 230px);
+    height: calc(env(safe-area-inset-top, 0px) + var(--mobile-browser-guard) + 230px);
     z-index: 1;
     background: linear-gradient(
       180deg,
@@ -2448,7 +2452,7 @@ body::before {
   }
 
   .stats-sticky {
-    min-height: calc(env(safe-area-inset-top, 0px) + 86px);
+    min-height: calc(env(safe-area-inset-top, 0px) + var(--mobile-browser-guard) + 86px);
     background: var(--color-page) !important;
   }
 
@@ -2458,7 +2462,7 @@ body::before {
     top: 0;
     right: 0;
     left: 0;
-    height: calc(env(safe-area-inset-top, 0px) + 112px);
+    height: calc(env(safe-area-inset-top, 0px) + var(--mobile-browser-guard) + 112px);
     z-index: 1;
     background: linear-gradient(
       180deg,
