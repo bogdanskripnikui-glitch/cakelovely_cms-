@@ -54,6 +54,24 @@ body::before {
   background-size: 1px 22px;
 }
 
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 180px;
+  z-index: 19;
+  pointer-events: none;
+  background: var(--color-page);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+body.is-page-scrolled::after {
+  opacity: 1;
+}
+
 .platform-loader {
   position: fixed;
   inset: 0;
@@ -2387,6 +2405,11 @@ body::before {
 }
 
 @media (max-width: 640px) {
+  body::after {
+    height: calc(env(safe-area-inset-top, 0px) + 188px);
+    z-index: 90;
+  }
+
   .sales-sticky,
   .stats-sticky {
     padding-inline: 16px;

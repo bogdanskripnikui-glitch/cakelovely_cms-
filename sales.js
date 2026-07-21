@@ -1204,6 +1204,7 @@ function switchView(view) {
 
 function updateSalesStickyState() {
   const isScrolled = window.scrollY > 4;
+  document.body.classList.toggle("is-page-scrolled", isScrolled);
   document.querySelector(".sales-sticky").classList.toggle("is-scrolled", isScrolled);
   document.querySelector(".stats-sticky").classList.toggle("is-scrolled", isScrolled);
 }
