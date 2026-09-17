@@ -52,7 +52,7 @@
         </section>
       </div>
     </div>
-    <main class="container app-shell" aria-hidden="true">
+    <main class="container app-shell" aria-hidden="true" tabindex="-1">
       <section class="app-screen is-active" id="salesScreen">
         <div class="sales-sticky">
           <header class="app-header">
@@ -156,7 +156,7 @@
               </span>
             </div>
           </button>
-          <article class="account-card metric-card">
+          <button class="account-card metric-card metric-card-button" id="bestSellerMetric" type="button" data-breakdown-mode="seller" aria-expanded="false" aria-controls="productsSoldBreakdown">
             <p class="price-label">TOP</p>
             <div class="metric-value">
               <span class="metric-icon" aria-hidden="true">
@@ -167,7 +167,7 @@
               </span>
               <p class="price-number best-seller-value" id="bestSeller">—</p>
             </div>
-          </article>
+          </button>
           <button class="account-card metric-card metric-card-button" id="cashRevenueMetric" type="button" data-breakdown-mode="cash" aria-expanded="false" aria-controls="productsSoldBreakdown">
             <p class="price-label" id="cashRevenueLabel">Виручка готівка</p>
             <div class="metric-value">
@@ -214,8 +214,8 @@
           <div class="card-row">
             <h2 class="card-title">Продажі</h2>
             <div class="nav-shell period-tabs" id="periodTabs">
-              <button class="nav-item period-button is-active" type="button" data-period="days">За днями</button>
-              <button class="nav-item period-button" type="button" data-period="months">За місяцями</button>
+              <button class="nav-item period-button is-active" type="button" data-period="days" aria-pressed="true">За днями</button>
+              <button class="nav-item period-button" type="button" data-period="months" aria-pressed="false">За місяцями</button>
             </div>
           </div>
           <div class="chart" id="salesChart" aria-label="Графік продажів"></div>
@@ -261,14 +261,32 @@
             <h2 class="card-title" id="orderTitle">Новий чек</h2>
             <p class="card-text order-meta" id="orderMeta">0 позицій</p>
           </div>
-          <label class="employee-discount-toggle" for="employeeDiscount">
-            <span class="employee-discount-copy">
-              <strong>Знижка для співробітників</strong>
-              <small>−50% холодні напої · −40% десерти · −35% бенто-торти</small>
-            </span>
-            <input id="employeeDiscount" type="checkbox" />
-            <span class="employee-discount-control" aria-hidden="true"></span>
-          </label>
+          <div class="discount-options" role="group" aria-label="Знижки">
+            <div class="discount-option">
+              <span class="employee-discount-copy">
+                <strong>Знижка для співробітників</strong>
+              </span>
+              <span class="discount-tooltip" data-discount-tooltip>
+                <button class="discount-tooltip-trigger" type="button" aria-label="Показати відсотки знижок" aria-controls="employeeDiscountTooltip" aria-expanded="false">?</button>
+                <span class="discount-tooltip-content" id="employeeDiscountTooltip" role="tooltip">
+                  Холодні напої, гарбузовий лате, мокочіно та горіхове какао −50% · Десерти −40% · Бенто-торти та мусові торти −35%
+                </span>
+              </span>
+              <label class="employee-discount-toggle employee-discount-toggle--control" for="employeeDiscount">
+                <input id="employeeDiscount" type="checkbox" />
+                <span class="employee-discount-control" aria-hidden="true"></span>
+              </label>
+            </div>
+            <div class="discount-option discount-option--free">
+              <span class="employee-discount-copy">
+                <strong>Безкоштовно</strong>
+              </span>
+              <label class="employee-discount-toggle employee-discount-toggle--control free-discount-toggle" for="freeDiscount">
+                <input id="freeDiscount" type="checkbox" />
+                <span class="employee-discount-control" aria-hidden="true"></span>
+              </label>
+            </div>
+          </div>
           <button class="button button-link close-button" type="button" id="closeDialog">Закрити</button>
         </div>
         <div class="order-layout">

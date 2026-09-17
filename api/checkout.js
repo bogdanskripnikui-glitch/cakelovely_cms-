@@ -7,6 +7,10 @@ function sendJson(response, statusCode, payload) {
   response.end(JSON.stringify(payload));
 }
 
+function roundMoneyValue(value) {
+  return Math.round(Number(value) || 0);
+}
+
 function serializeSale(data) {
   return {
     id: data.id || crypto.randomUUID(),
@@ -14,12 +18,38 @@ function serializeSale(data) {
     name: data.name,
     type: data.type,
     quantity: data.quantity,
-    total: data.total,
+    total: roundMoneyValue(data.total),
     payment: data.payment,
     employee: data.employee || "",
     orderNumber: data.order_number || "",
     date: data.sold_at,
   };
+}
+
+function isValidCheckoutPayload(payload) {
+  const { city, name, type, quantity, total, payment } = payload;
+  const quantityValue = Number(quantity);
+  const totalValue = Number(total);
+
+  return (
+    !!city &&
+    ["kharkiv", "lutsk"].includes(city) &&
+    !!name &&
+    !!type &&
+    !!payment &&
+    Number.isFinite(quantityValue) &&
+    quantityValue > 0 &&
+    Number.isFinite(totalValue) &&
+    totalValue > 0
+  );
+}
+
+function canReadCity(session, city) {
+  return session.role === "stats" || session.city === city;
+}
+
+function isReadOnlySession(session) {
+  return session.role === "stats";
 }
 
 module.exports = async (request, response) => {
@@ -41,7 +71,7 @@ module.exports = async (request, response) => {
       if (!city || !["kharkiv", "lutsk"].includes(city)) {
         return sendJson(response, 400, { error: "Некоректне місто" });
       }
-      if (session.city !== city) return sendJson(response, 403, { error: "Немає доступу до цієї філії" });
+      if (!canReadCity(session, city)) return sendJson(response, 403, { error: "Немає доступу до цієї філії" });
 
       const supabase = getSupabaseClient();
       const { data, error } = await supabase.from(getCheckoutTable()).select("*").eq("city", city).order("sold_at", { ascending: false });
@@ -53,6 +83,7 @@ module.exports = async (request, response) => {
   }
 
   if (request.method === "DELETE") {
+    if (isReadOnlySession(session)) return sendJson(response, 403, { error: "Режим доступний лише для перегляду" });
     try {
       const { id, city } = request.query || {};
       if (!id || !city || !["kharkiv", "lutsk"].includes(city)) {
@@ -82,6 +113,8 @@ module.exports = async (request, response) => {
     return sendJson(response, 405, { error: "Метод не підтримується" });
   }
 
+  if (isReadOnlySession(session)) return sendJson(response, 403, { error: "Режим доступний лише для перегляду" });
+
   try {
     const {
       city,
@@ -95,7 +128,7 @@ module.exports = async (request, response) => {
       date,
     } = request.body || {};
 
-    if (!city || !["kharkiv", "lutsk"].includes(city) || !name || !type || !quantity || !total || !payment) {
+    if (!isValidCheckoutPayload({ city, name, type, quantity, total, payment })) {
       return sendJson(response, 400, { error: "Не заповнені обов’язкові поля" });
     }
     if (session.city !== city) return sendJson(response, 403, { error: "Немає доступу до цієї філії" });
@@ -105,7 +138,7 @@ module.exports = async (request, response) => {
       name,
       type,
       quantity: Number(quantity),
-      total: Number(total),
+      total: roundMoneyValue(total),
       payment,
       employee,
       order_number: orderNumber || null,
@@ -127,3 +160,7 @@ module.exports = async (request, response) => {
     return sendJson(response, 500, { error: error.message || "Не вдалося оформити операцію" });
   }
 };
+
+module.exports.isValidCheckoutPayload = isValidCheckoutPayload;
+module.exports.canReadCity = canReadCity;
+module.exports.isReadOnlySession = isReadOnlySession;

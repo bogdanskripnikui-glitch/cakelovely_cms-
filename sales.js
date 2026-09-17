@@ -93,14 +93,26 @@ const categories = [
       {
         id: "cappuccino",
         name: "Cappuccino",
-        price: 65,
+        price: 70,
         image: "IMG/Cappuccino.webp",
       },
       {
         id: "latte",
         name: "Latte",
-        price: 75,
+        price: 80,
         image: "IMG/Latte.webp",
+      },
+      {
+        id: "pumpkin-latte",
+        name: "Гарбузовий лате",
+        price: 90,
+        image: "IMG/PumpkinLatte.webp",
+      },
+      {
+        id: "mochaccino",
+        name: "Мокочіно",
+        price: 90,
+        image: "IMG/Mochaccino.webp",
       },
       {
         id: "flat-white",
@@ -111,7 +123,7 @@ const categories = [
       {
         id: "cocoa-small",
         name: "Какао",
-        price: 60,
+        price: 70,
         group: "cocoa",
         badge: "Маленький",
         image: "IMG/Какао.webp",
@@ -119,15 +131,21 @@ const categories = [
       {
         id: "cocoa-large",
         name: "Какао",
-        price: 70,
+        price: 80,
         group: "cocoa",
         badge: "Великий",
         image: "IMG/Какао.webp",
       },
       {
+        id: "hazelnut-cocoa",
+        name: "Горіхове какао",
+        price: 90,
+        image: "IMG/HazelnutCocoa.webp",
+      },
+      {
         id: "hot-chocolate-small",
         name: "Гарячий шоколад",
-        price: 60,
+        price: 70,
         group: "hot-chocolate",
         badge: "Маленький",
         image: "IMG/HotChocolate.webp",
@@ -135,7 +153,7 @@ const categories = [
       {
         id: "hot-chocolate-large",
         name: "Гарячий шоколад",
-        price: 70,
+        price: 80,
         group: "hot-chocolate",
         badge: "Великий",
         image: "IMG/HotChocolate.webp",
@@ -333,6 +351,38 @@ const categories = [
         image: "IMG/MousseTorte.webp",
       },
       {
+        id: "savory-cupcake-blue-cheese-pear",
+        name: "Капкейки солоні",
+        price: 150,
+        group: "savory-cupcakes",
+        badge: "Дор блю та груша",
+        image: "IMG/SavoryCupcakeBlueCheesePear.webp",
+      },
+      {
+        id: "savory-cupcake-ham-pepper",
+        name: "Капкейки солоні",
+        price: 150,
+        group: "savory-cupcakes",
+        badge: "Шинка та печений перець",
+        image: "IMG/SavoryCupcakeHamPepper.webp",
+      },
+      {
+        id: "savory-cupcake-spinach-salmon",
+        name: "Капкейки солоні",
+        price: 150,
+        group: "savory-cupcakes",
+        badge: "Шпинат із лососем",
+        image: "IMG/SavoryCupcakeSpinachSalmon.webp",
+      },
+      {
+        id: "savory-cupcake-caprese",
+        name: "Капкейки солоні",
+        price: 150,
+        group: "savory-cupcakes",
+        badge: "Капрезе",
+        image: "IMG/SavoryCupcakeCaprese.webp",
+      },
+      {
         id: "festive-cupcake",
         name: "Святковий капкейк",
         price: 110,
@@ -434,9 +484,11 @@ const IS_LOCAL_MODE =
   window.location.protocol === "file:" ||
   ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
 const TEST_MODE_PASSWORD = "555555";
+const STATS_VIEWER_PASSWORD = "111111";
 const STORAGE_SUFFIX = IS_LOCAL_MODE ? "-local" : "";
 const CITY_STORAGE_KEY = `cake-lovely-city${STORAGE_SUFFIX}`;
 const SESSION_STORAGE_KEY = `cake-lovely-session${STORAGE_SUFFIX}`;
+const ROLE_STORAGE_KEY = `cake-lovely-role${STORAGE_SUFFIX}`;
 const TEST_CITY_STORAGE_KEY = "cake-lovely-city-test";
 const TEST_SESSION_STORAGE_KEY = "cake-lovely-session-test";
 const LOCAL_SALES_STORAGE_KEY = "cake-lovely-local-sales";
@@ -446,20 +498,25 @@ const cities = {
   kharkiv: {
     id: "kharkiv",
     name: "Харків",
-    employees: ["Даша", "Настя", "Соня", "Катя", "Тетяна"],
+    employees: ["Даша", "Настя", "Соня", "Катя", "Тетяна", "Арина"],
   },
   lutsk: {
     id: "lutsk",
     name: "Луцьк",
-    employees: ["Таня", "Соня", "Аня"],
+    employees: ["Таня", "Аня", "Стажер Іванна", "Стажер Катя"],
   },
 };
 
 let authToken = localStorage.getItem(TEST_SESSION_STORAGE_KEY) || localStorage.getItem(SESSION_STORAGE_KEY) || "";
+let sessionRole = authToken.startsWith("test:") ? "operator" : localStorage.getItem(ROLE_STORAGE_KEY) === "stats" ? "stats" : "operator";
 let pendingCityId = null;
 
 function isTestMode() {
   return authToken.startsWith("test:");
+}
+
+function isStatsViewer() {
+  return sessionRole === "stats";
 }
 
 function isOfflineMode() {
@@ -493,7 +550,7 @@ function readLocalSales() {
 
 const salesByCity = readLocalSales();
 
-const ASSET_VERSION = "20260720-17";
+const ASSET_VERSION = "20260917-1";
 
 function versionedAssetUrl(path) {
   if (/^https?:\/\//.test(path)) return path;
@@ -502,6 +559,7 @@ function versionedAssetUrl(path) {
 
 const state = {
   cityId: initialCityId,
+  role: sessionRole,
   categoryId: "cold",
   draftOrder: [],
   payment: "cash",
@@ -509,6 +567,7 @@ const state = {
   topUpPayment: "cash",
   topUpEmployee: "",
   employeeDiscount: false,
+  freeDiscount: false,
   period: "days",
   productsBreakdownOpen: false,
   breakdownMode: "products",
@@ -521,17 +580,61 @@ const money = new Intl.NumberFormat("uk-UA", {
   style: "currency",
   currency: "UAH",
   minimumFractionDigits: 0,
-  maximumFractionDigits: 2,
+  maximumFractionDigits: 0,
 });
 
+function roundMoneyValue(value) {
+  return Math.round(Number(value) || 0);
+}
+
+function isEmployeeDiscountedSale(sale) {
+  if (!sale || sale.type === "adjustment") return false;
+
+  const quantity = Number(sale.quantity) || 0;
+  const total = roundMoneyValue(sale.total);
+  if (!quantity || total <= 1) return false;
+
+  return categories.some((category) =>
+    category.items.some((item) => {
+      if (item.name !== sale.name || category.type !== sale.type) return false;
+
+      const discount =
+        EMPLOYEE_DISCOUNTS[item.id] ||
+        EMPLOYEE_DISCOUNTS[item.group] ||
+        (item.type === "dessert" ? EMPLOYEE_DISCOUNTS.dessert : EMPLOYEE_DISCOUNTS[category.id]) ||
+        0;
+      if (!discount) return false;
+
+      const currentDiscountTotal = roundMoneyValue(item.price * quantity * (1 - discount));
+      const legacyDiscountTotal = roundMoneyValue(item.price * quantity * 0.65);
+      return total === currentDiscountTotal || total === legacyDiscountTotal;
+    }),
+  );
+}
+
+function sameDateValue(first, second) {
+  return dateInputValue(first) === dateInputValue(second);
+}
+
+function salesForSelectedPeriod() {
+  const selectedDate = parseDateInput(state.salesDate);
+  return state.sales.filter((sale) => {
+    if (state.period === "days") return sameDateValue(sale.date, selectedDate);
+
+    const saleDate = new Date(sale.date);
+    return saleDate.getMonth() === selectedDate.getMonth() && saleDate.getFullYear() === selectedDate.getFullYear();
+  });
+}
+
 function formatResponsiveMoney(value) {
-  if (!window.matchMedia("(max-width: 640px)").matches) return money.format(value);
+  const roundedValue = roundMoneyValue(value);
+  if (!window.matchMedia("(max-width: 640px)").matches) return money.format(roundedValue);
 
   const mobileValue = new Intl.NumberFormat("uk-UA", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
     useGrouping: false,
-  }).format(value);
+  }).format(roundedValue);
 
   return `${mobileValue} грн`;
 }
@@ -554,6 +657,11 @@ function formatSalesDate(value) {
   return parseDateInput(value).toLocaleDateString("uk-UA", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
+function formatSelectedPeriod(value) {
+  if (state.period === "days") return formatSalesDate(value);
+  return parseDateInput(value).toLocaleDateString("uk-UA", { month: "long", year: "numeric" });
+}
+
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, "&amp;")
@@ -565,8 +673,12 @@ function escapeHtml(value) {
 
 const EMPLOYEE_DISCOUNTS = {
   cold: 0.5,
+  "pumpkin-latte": 0.5,
+  mochaccino: 0.5,
+  "hazelnut-cocoa": 0.5,
   dessert: 0.4,
   "bento-cake": 0.35,
+  "mousse-torte": 0.35,
 };
 
 const checkoutApiUrl = "/api/checkout";
@@ -580,22 +692,37 @@ function authorizedHeaders(includeContentType = false) {
 }
 
 async function authenticateCity(city, password) {
+  if (IS_LOCAL_MODE && password === STATS_VIEWER_PASSWORD) {
+    authToken = `local-stats:${city}`;
+    sessionRole = "stats";
+    state.role = sessionRole;
+    localStorage.setItem(SESSION_STORAGE_KEY, authToken);
+    localStorage.setItem(ROLE_STORAGE_KEY, sessionRole);
+    return { city, role: sessionRole };
+  }
+
   if (IS_LOCAL_MODE) {
     authToken = `local:${city}`;
+    sessionRole = "operator";
+    state.role = sessionRole;
     localStorage.setItem(SESSION_STORAGE_KEY, authToken);
-    return city;
+    localStorage.setItem(ROLE_STORAGE_KEY, sessionRole);
+    return { city, role: sessionRole };
   }
 
   if (password === TEST_MODE_PASSWORD) {
     authToken = `test:${city}`;
+    sessionRole = "operator";
+    state.role = sessionRole;
     localStorage.setItem(TEST_SESSION_STORAGE_KEY, authToken);
     localStorage.setItem(TEST_CITY_STORAGE_KEY, city);
     localStorage.removeItem(SESSION_STORAGE_KEY);
     localStorage.removeItem(CITY_STORAGE_KEY);
+    localStorage.removeItem(ROLE_STORAGE_KEY);
     const storedSales = readLocalSales();
     salesByCity.kharkiv = storedSales.kharkiv;
     salesByCity.lutsk = storedSales.lutsk;
-    return city;
+    return { city, role: sessionRole };
   }
 
   const response = await fetch(authApiUrl, {
@@ -606,22 +733,33 @@ async function authenticateCity(city, password) {
   const result = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(result.error || "Не вдалося увійти");
   authToken = result.token;
+  sessionRole = result.role === "stats" ? "stats" : "operator";
+  state.role = sessionRole;
   localStorage.setItem(SESSION_STORAGE_KEY, authToken);
+  localStorage.setItem(ROLE_STORAGE_KEY, sessionRole);
   localStorage.removeItem(TEST_SESSION_STORAGE_KEY);
   localStorage.removeItem(TEST_CITY_STORAGE_KEY);
-  return result.city;
+  return { city: result.city, role: sessionRole };
 }
 
 async function verifySession(city) {
-  if (IS_LOCAL_MODE) return authToken === `local:${city}`;
-  if (isTestMode()) return authToken === `test:${city}`;
+  if (IS_LOCAL_MODE) {
+    if (authToken.startsWith("local-stats:")) return { city, role: "stats" };
+    if (authToken === `local:${city}`) return { city, role: "operator" };
+    return null;
+  }
+  if (isTestMode()) return authToken === `test:${city}` ? { city, role: "operator" } : null;
 
   const response = await fetch(authApiUrl, { headers: authorizedHeaders() });
   const result = await response.json().catch(() => ({}));
-  return response.ok && result.city === city;
+  if (!response.ok) return null;
+  const role = result.role === "stats" ? "stats" : "operator";
+  if (role !== "stats" && result.city !== city) return null;
+  return { city, role };
 }
 
 async function requestCheckout(payload) {
+  if (isStatsViewer()) throw new Error("Режим доступний лише для перегляду");
   if (isOfflineMode()) {
     return {
       ...payload,
@@ -645,6 +783,7 @@ async function requestCheckout(payload) {
 }
 
 async function deleteCheckout(id) {
+  if (isStatsViewer()) throw new Error("Режим доступний лише для перегляду");
   if (isOfflineMode()) return;
 
   const url = `${checkoutApiUrl}?id=${encodeURIComponent(id)}&city=${encodeURIComponent(state.cityId)}`;
@@ -664,7 +803,7 @@ function saleSeed(city, name, type, quantity, total, payment, daysAgo, employee)
     name,
     type,
     quantity,
-    total,
+    total: roundMoneyValue(total),
     payment,
     employee,
     city,
@@ -678,7 +817,7 @@ function normalizeSale(sale) {
     name: sale.name,
     type: sale.type,
     quantity: Number(sale.quantity),
-    total: Number(sale.total),
+    total: roundMoneyValue(sale.total),
     payment: sale.payment,
     employee: sale.employee || "",
     orderNumber: sale.orderNumber || "",
@@ -693,6 +832,32 @@ function persistLocalSales() {
   localStorage.setItem(activeSalesStorageKey(), JSON.stringify(salesByCity));
 }
 
+function renderRoleNavigation() {
+  const viewerMode = isStatsViewer();
+  document.body.classList.toggle("is-stats-viewer", viewerMode);
+  els.appShell.classList.toggle("is-stats-viewer", viewerMode);
+  els.appMenus.forEach((menu) => {
+    menu.setAttribute("aria-label", viewerMode ? "Міста" : "Розділи");
+  });
+
+  els.appViews.forEach((button) => {
+    const cityId = button.dataset.view === "sales" ? "kharkiv" : "lutsk";
+    if (viewerMode) {
+      button.dataset.viewerCity = cityId;
+      button.textContent = cities[cityId].name;
+      button.setAttribute("aria-label", `Статистика: ${cities[cityId].name}`);
+      button.setAttribute("aria-pressed", String(state.cityId === cityId));
+      button.classList.toggle("is-active", state.cityId === cityId);
+      return;
+    }
+
+    delete button.dataset.viewerCity;
+    button.textContent = button.dataset.view === "sales" ? "Продажі" : "Статистика";
+    button.removeAttribute("aria-label");
+    button.removeAttribute("aria-pressed");
+  });
+}
+
 function renderEmployeeOptions() {
   const employees = cities[state.cityId]?.employees || [];
   const employeeButtons = employees
@@ -703,10 +868,14 @@ function renderEmployeeOptions() {
 }
 
 function renderWorkspace() {
-  renderEmployeeOptions();
-  renderCategories();
-  renderProducts();
+  renderRoleNavigation();
+  if (!isStatsViewer()) {
+    renderEmployeeOptions();
+    renderCategories();
+    renderProducts();
+  }
   renderStats();
+  switchView(isStatsViewer() ? "stats" : document.querySelector(".app-screen.is-active")?.id === "statsScreen" ? "stats" : "sales");
   updateSalesStickyState();
   document.querySelectorAll("[data-test-badge]").forEach((badge) => {
     badge.hidden = !isOfflineMode();
@@ -714,7 +883,7 @@ function renderWorkspace() {
   els.logoutButtons.forEach((button) => {
     button.title = `${cities[state.cityId]?.name || "Місто"}: обрати інше місто`;
   });
-  centerActiveCategory({ behavior: "auto" });
+  if (!isStatsViewer()) centerActiveCategory({ behavior: "auto" });
 }
 
 async function loadCitySales(cityId) {
@@ -747,9 +916,11 @@ async function selectCity(cityId, { persist = true, minimumLoaderTime = 0 } = {}
   const startedAt = Date.now();
   state.cityId = cityId;
   state.sales = salesByCity[cityId];
-  state.categoryId = "cold";
-  state.period = "days";
-  resetDraftOrder();
+  if (!isStatsViewer()) {
+    state.categoryId = "cold";
+    state.period = "days";
+    resetDraftOrder();
+  }
   if (persist) localStorage.setItem(activeCityStorageKey(), cityId);
   renderWorkspace();
 
@@ -773,10 +944,15 @@ function showCitySelection() {
   localStorage.removeItem(SESSION_STORAGE_KEY);
   localStorage.removeItem(TEST_CITY_STORAGE_KEY);
   localStorage.removeItem(TEST_SESSION_STORAGE_KEY);
+  localStorage.removeItem(ROLE_STORAGE_KEY);
   authToken = "";
+  sessionRole = "operator";
   pendingCityId = null;
   state.cityId = null;
+  state.role = sessionRole;
   state.sales = [];
+  document.body.classList.remove("is-stats-viewer");
+  els.appShell.classList.remove("is-stats-viewer");
   resetDraftOrder();
   [els.orderDialog, els.topUpDialog].forEach((dialog) => {
     if (dialog.open) dialog.close();
@@ -794,18 +970,26 @@ function showCitySelection() {
 }
 
 function draftOrderTotal() {
-  return state.draftOrder.reduce((sum, item) => sum + draftItemTotal(item), 0);
+  if (state.freeDiscount && state.draftOrder.length) return 1;
+  return roundMoneyValue(state.draftOrder.reduce((sum, item) => sum + draftItemTotal(item), 0));
 }
 
 function draftItemDiscount(item) {
+  if (state.freeDiscount) return 1;
   if (!state.employeeDiscount) return 0;
+  if (item.id && EMPLOYEE_DISCOUNTS[item.id]) return EMPLOYEE_DISCOUNTS[item.id];
   if (item.group && EMPLOYEE_DISCOUNTS[item.group]) return EMPLOYEE_DISCOUNTS[item.group];
   if (item.type === "dessert") return EMPLOYEE_DISCOUNTS.dessert;
   return EMPLOYEE_DISCOUNTS[item.categoryId] || 0;
 }
 
 function draftItemTotal(item) {
-  return Math.round(item.price * item.quantity * (1 - draftItemDiscount(item)) * 100) / 100;
+  return roundMoneyValue(item.price * item.quantity * (1 - draftItemDiscount(item)));
+}
+
+function draftSubmissionTotal(item, index) {
+  if (state.freeDiscount && state.draftOrder.length) return index === 0 ? 1 : 0;
+  return draftItemTotal(item);
 }
 
 function draftPositionCount() {
@@ -828,13 +1012,42 @@ function resetDraftOrder() {
   state.payment = "cash";
   state.employee = "";
   state.employeeDiscount = false;
+  state.freeDiscount = false;
   els.employeeDiscount.checked = false;
+  els.freeDiscount.checked = false;
+  closeDiscountTooltip();
   els.cashInput.value = "";
   els.employeeValue.innerHTML = 'Ім’я співробітника <span class="required-mark" aria-hidden="true">*</span>';
   els.employeePicker.classList.remove("is-open");
   els.employeePicker.classList.remove("is-invalid");
   els.employeeTrigger.removeAttribute("aria-invalid");
   els.employeeTrigger.setAttribute("aria-expanded", "false");
+}
+
+function resetOrderDialogUi() {
+  els.employeePicker.classList.remove("is-open", "is-invalid");
+  els.employeeTrigger.removeAttribute("aria-invalid");
+  els.employeeTrigger.setAttribute("aria-expanded", "false");
+}
+
+function resetTopUpDialogUi() {
+  els.topUpEmployeePicker.classList.remove("is-open", "is-invalid");
+  els.topUpEmployeeTrigger.removeAttribute("aria-invalid");
+  els.topUpEmployeeTrigger.setAttribute("aria-expanded", "false");
+  els.topUpAmount.removeAttribute("aria-invalid");
+  els.topUpAmountError.classList.remove("is-visible");
+}
+
+function closeDiscountTooltip() {
+  if (!els.discountTooltip || !els.discountTooltipTrigger) return;
+  els.discountTooltip.classList.remove("is-open");
+  els.discountTooltipTrigger.setAttribute("aria-expanded", "false");
+}
+
+function toggleDiscountTooltip() {
+  if (!els.discountTooltip || !els.discountTooltipTrigger) return;
+  const isOpen = els.discountTooltip.classList.toggle("is-open");
+  els.discountTooltipTrigger.setAttribute("aria-expanded", String(isOpen));
 }
 
 function addProductToDraft(product) {
@@ -867,12 +1080,15 @@ const els = {
   cityPassword: document.querySelector("#cityPassword"),
   cityLoginError: document.querySelector("#cityLoginError"),
   appShell: document.querySelector(".app-shell"),
+  appMenus: document.querySelectorAll(".app-menu"),
+  appViews: document.querySelectorAll(".app-view"),
   categoryTabs: document.querySelector("#categoryTabs"),
   productGrid: document.querySelector("#productGrid"),
   orderDialog: document.querySelector("#orderDialog"),
   topUpDialog: document.querySelector("#topUpDialog"),
   orderForm: document.querySelector("#orderForm"),
   topUpForm: document.querySelector("#topUpForm"),
+  appShell: document.querySelector(".app-shell"),
   draftItems: document.querySelector("#draftItems"),
   addMoreItems: document.querySelector("#addMoreItems"),
   cancelOrder: document.querySelector("#cancelOrder"),
@@ -885,6 +1101,9 @@ const els = {
   employeeValue: document.querySelector("#employeeValue"),
   employeeOptions: document.querySelector("#employeeOptions"),
   employeeDiscount: document.querySelector("#employeeDiscount"),
+  freeDiscount: document.querySelector("#freeDiscount"),
+  discountTooltip: document.querySelector("[data-discount-tooltip]"),
+  discountTooltipTrigger: document.querySelector(".discount-tooltip-trigger"),
   logoutButtons: document.querySelectorAll("[data-logout]"),
   topUpAmount: document.querySelector("#topUpAmount"),
   topUpAmountError: document.querySelector("#topUpAmountError"),
@@ -899,6 +1118,7 @@ const els = {
   salesScreen: document.querySelector("#salesScreen"),
   statsScreen: document.querySelector("#statsScreen"),
   productsSoldMetric: document.querySelector("#productsSoldMetric"),
+  bestSellerMetric: document.querySelector("#bestSellerMetric"),
   cashRevenueMetric: document.querySelector("#cashRevenueMetric"),
   cardRevenueMetric: document.querySelector("#cardRevenueMetric"),
   productsSoldBreakdown: document.querySelector("#productsSoldBreakdown"),
@@ -1056,7 +1276,14 @@ function openOrder(product) {
 
   addProductToDraft(product);
   renderOrder();
+  resetOrderDialogUi();
   els.orderDialog.showModal();
+  resetDialogState(els.orderDialog);
+  requestAnimationFrame(() => {
+    document.querySelector("#closeDialog")?.focus({ preventScroll: true });
+    resetDialogState(els.orderDialog);
+  });
+  setTimeout(() => resetDialogState(els.orderDialog), 240);
 }
 
 function openTopUp() {
@@ -1073,7 +1300,70 @@ function openTopUp() {
   els.topUpEmployeePicker.classList.remove("is-open", "is-invalid");
   els.topUpEmployeeTrigger.removeAttribute("aria-invalid");
   els.topUpEmployeeTrigger.setAttribute("aria-expanded", "false");
+  resetTopUpDialogUi();
   els.topUpDialog.showModal();
+  resetDialogState(els.topUpDialog);
+  requestAnimationFrame(() => {
+    document.querySelector("#closeTopUpDialog")?.focus({ preventScroll: true });
+    resetDialogState(els.topUpDialog);
+  });
+  setTimeout(() => resetDialogState(els.topUpDialog), 240);
+}
+
+function resetDialogScroll(dialog) {
+  if (!dialog) return;
+
+  const reset = () => {
+    dialog.scrollTop = 0;
+    dialog.scrollLeft = 0;
+
+    dialog.querySelectorAll(".order-card, .order-layout, .draft-items").forEach((element) => {
+      element.scrollTop = 0;
+      element.scrollLeft = 0;
+    });
+  };
+
+  reset();
+  requestAnimationFrame(() => {
+    reset();
+    requestAnimationFrame(reset);
+  });
+  setTimeout(reset, 0);
+  setTimeout(reset, 80);
+  setTimeout(reset, 180);
+}
+
+function resetDialogState(dialog) {
+  if (!dialog) return;
+
+  const activeElement = document.activeElement;
+  if (activeElement instanceof HTMLElement && dialog.contains(activeElement)) {
+    activeElement.blur();
+  }
+
+  resetDialogScroll(dialog);
+}
+
+function releaseDialogFocus(dialog) {
+  if (!dialog) return;
+
+  const activeElement = document.activeElement;
+  if (activeElement instanceof HTMLElement && dialog.contains(activeElement)) {
+    activeElement.blur();
+  }
+
+  els.appShell?.focus({ preventScroll: true });
+}
+
+function closeDialogSafely(dialog, resetUi) {
+  if (!dialog) return;
+
+  releaseDialogFocus(dialog);
+  resetUi?.();
+  resetDialogState(dialog);
+  if (dialog.open) dialog.close();
+  requestAnimationFrame(() => resetDialogState(dialog));
+  setTimeout(() => resetDialogState(dialog), 240);
 }
 
 function renderOrder() {
@@ -1082,9 +1372,10 @@ function renderOrder() {
   els.orderTitle.textContent = "Новий чек";
   els.orderMeta.textContent = draftMetaLabel();
   els.employeeDiscount.checked = state.employeeDiscount;
+  els.freeDiscount.checked = state.freeDiscount;
   els.draftItems.innerHTML = state.draftOrder
     .map(
-      (item) => `
+      (item, index) => `
         <article class="draft-item" data-draft-item="${item.id}">
           <button class="draft-remove" type="button" data-remove-item="${item.id}" aria-label="Видалити ${item.name}">×</button>
           <img class="draft-image" src="${versionedAssetUrl(item.image)}" alt="${item.name}" decoding="async" />
@@ -1100,7 +1391,7 @@ function renderOrder() {
               <button class="draft-step-button draft-step-button-plus" type="button" data-step-item="${item.id}" data-step-action="plus" aria-label="Збільшити ${item.name}">+</button>
             </div>
           </div>
-          <p class="draft-price">${money.format(draftItemTotal(item))}</p>
+          <p class="draft-price">${money.format(draftSubmissionTotal(item, index))}</p>
         </article>
       `,
     )
@@ -1116,7 +1407,7 @@ function renderOrder() {
   els.cashField.classList.toggle("is-hidden", !isCash);
   els.changeRow.classList.toggle("is-hidden", !isCash);
   const cash = Number(els.cashInput.value || 0);
-  els.changeValue.textContent = money.format(Math.max(0, cash - total));
+  els.changeValue.textContent = money.format(roundMoneyValue(Math.max(0, cash - total)));
 }
 
 async function confirmOrder() {
@@ -1131,13 +1422,13 @@ async function confirmOrder() {
 
   const checkoutDate = new Date().toISOString();
   const createdSales = await Promise.all(
-    state.draftOrder.map((item) =>
+    state.draftOrder.map((item, index) =>
       requestCheckout({
         city: state.cityId,
         name: item.name,
         type: item.type,
         quantity: item.quantity,
-        total: draftItemTotal(item),
+        total: draftSubmissionTotal(item, index),
         payment: state.payment,
         employee: state.employee,
         date: checkoutDate,
@@ -1151,7 +1442,7 @@ async function confirmOrder() {
   persistLocalSales();
 
   resetDraftOrder();
-  els.orderDialog.close();
+  closeDialogSafely(els.orderDialog, resetOrderDialogUi);
   renderStats();
 }
 
@@ -1185,11 +1476,12 @@ async function confirmTopUp() {
   });
   state.sales.unshift(normalizeSale(sale));
   persistLocalSales();
-  els.topUpDialog.close();
+  closeDialogSafely(els.topUpDialog, resetTopUpDialogUi);
   renderStats();
 }
 
 function switchView(view) {
+  if (isStatsViewer()) view = "stats";
   if (view !== "stats" && state.productsBreakdownOpen) {
     state.productsBreakdownOpen = false;
     document.body.classList.remove("is-breakdown-open");
@@ -1197,7 +1489,9 @@ function switchView(view) {
   els.salesScreen.classList.toggle("is-active", view === "sales");
   els.statsScreen.classList.toggle("is-active", view === "stats");
   document.querySelectorAll(".app-view").forEach((button) => {
-    button.classList.toggle("is-active", button.dataset.view === view);
+    const isActive = isStatsViewer() ? button.dataset.viewerCity === state.cityId : button.dataset.view === view;
+    button.classList.toggle("is-active", isActive);
+    if (isStatsViewer()) button.setAttribute("aria-pressed", String(isActive));
   });
   if (view === "stats") renderStats();
 }
@@ -1209,43 +1503,34 @@ function updateSalesStickyState() {
 }
 
 function renderStats() {
-  const today = new Date();
-  const todayKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
-  const isDailyPeriod = state.period === "days";
-  const periodSales = state.sales.filter((sale) => {
-    const saleDate = new Date(sale.date);
-    if (isDailyPeriod) return `${saleDate.getFullYear()}-${saleDate.getMonth()}-${saleDate.getDate()}` === todayKey;
-    return saleDate.getMonth() === today.getMonth() && saleDate.getFullYear() === today.getFullYear();
-  });
-  const drinks = periodSales.filter((sale) => sale.type === "drink").reduce((sum, sale) => sum + sale.quantity, 0);
-  const desserts = periodSales.filter((sale) => sale.type === "dessert").reduce((sum, sale) => sum + sale.quantity, 0);
-  const cashRevenue = periodSales.filter((sale) => sale.payment === "cash").reduce((sum, sale) => sum + sale.total, 0);
-  const cardRevenue = periodSales.filter((sale) => sale.payment === "card").reduce((sum, sale) => sum + sale.total, 0);
-  const periodRevenue = periodSales.reduce((sum, sale) => sum + sale.total, 0);
-  const todaySales = state.sales.filter((sale) => {
-    const saleDate = new Date(sale.date);
-    return `${saleDate.getFullYear()}-${saleDate.getMonth()}-${saleDate.getDate()}` === todayKey;
-  });
-  const todayRevenue = todaySales.reduce((sum, sale) => sum + sale.total, 0);
-  const sellerTotals = state.sales.reduce((totals, sale) => {
-    if (sale.employee) totals[sale.employee] = (totals[sale.employee] || 0) + sale.total;
-    return totals;
-  }, {});
-  const bestSeller = Object.entries(sellerTotals).sort(([, firstTotal], [, secondTotal]) => secondTotal - firstTotal)[0]?.[0] || "—";
+  const selectedSales = salesForSelectedPeriod();
+  const drinks = selectedSales.filter((sale) => sale.type === "drink").reduce((sum, sale) => sum + sale.quantity, 0);
+  const desserts = selectedSales.filter((sale) => sale.type === "dessert").reduce((sum, sale) => sum + sale.quantity, 0);
+  const cashRevenue = roundMoneyValue(selectedSales.filter((sale) => sale.payment === "cash").reduce((sum, sale) => sum + sale.total, 0));
+  const cardRevenue = roundMoneyValue(selectedSales.filter((sale) => sale.payment === "card").reduce((sum, sale) => sum + sale.total, 0));
+  const selectedRevenue = roundMoneyValue(selectedSales.reduce((sum, sale) => sum + sale.total, 0));
+  const bestSeller = Object.entries(
+    selectedSales.reduce((totals, sale) => {
+      if (sale.employee && sale.type !== "adjustment" && !isEmployeeDiscountedSale(sale)) {
+        totals[sale.employee] = (totals[sale.employee] || 0) + sale.quantity;
+      }
+      return totals;
+    }, {}),
+  ).sort(([, firstQuantity], [, secondQuantity]) => secondQuantity - firstQuantity)[0]?.[0] || "—";
   els.drinksSold.textContent = drinks;
   els.dessertsSold.textContent = desserts;
   els.cashRevenue.textContent = formatResponsiveMoney(cashRevenue);
   els.cashRevenue.title = money.format(cashRevenue);
   els.cardRevenue.textContent = formatResponsiveMoney(cardRevenue);
   els.cardRevenue.title = money.format(cardRevenue);
-  els.statsHeaderRevenue.textContent = money.format(periodRevenue);
-  els.statsHeaderRevenue.title = money.format(periodRevenue);
+  els.statsHeaderRevenue.textContent = money.format(selectedRevenue);
+  els.statsHeaderRevenue.title = money.format(selectedRevenue);
   els.bestSeller.textContent = bestSeller;
-  els.todayRevenue.textContent = money.format(todayRevenue);
-  els.todayRevenue.title = money.format(todayRevenue);
-  els.todayDrinks.textContent = todaySales.filter((sale) => sale.type === "drink").reduce((sum, sale) => sum + sale.quantity, 0);
-  els.todayDesserts.textContent = todaySales.filter((sale) => sale.type === "dessert").reduce((sum, sale) => sum + sale.quantity, 0);
-  renderProductsBreakdown(periodSales);
+  els.todayRevenue.textContent = money.format(selectedRevenue);
+  els.todayRevenue.title = money.format(selectedRevenue);
+  els.todayDrinks.textContent = selectedSales.filter((sale) => sale.type === "drink").reduce((sum, sale) => sum + sale.quantity, 0);
+  els.todayDesserts.textContent = selectedSales.filter((sale) => sale.type === "dessert").reduce((sum, sale) => sum + sale.quantity, 0);
+  renderProductsBreakdown(selectedSales, bestSeller);
   renderChart();
   renderRecentSales();
 }
@@ -1288,7 +1573,7 @@ function renderBreakdownList(target, items) {
         <div class="sold-breakdown-row">
           <span class="sold-breakdown-name">${escapeHtml(item.name)}</span>
           <span class="sold-breakdown-quantity">${item.quantity} шт.</span>
-          <span class="sold-breakdown-total">${money.format(item.total)}</span>
+          <span class="sold-breakdown-total">${money.format(roundMoneyValue(item.total))}</span>
         </div>
       `,
     )
@@ -1307,15 +1592,29 @@ function openProductsBreakdown(mode) {
   renderStats();
 }
 
-function renderProductsBreakdown(periodSales) {
+function renderProductsBreakdown(periodSales, bestSeller) {
   els.productsSoldBreakdown.hidden = !state.productsBreakdownOpen;
-  [els.productsSoldMetric, els.cashRevenueMetric, els.cardRevenueMetric].forEach((metric) => {
+  [els.productsSoldMetric, els.bestSellerMetric, els.cashRevenueMetric, els.cardRevenueMetric].forEach((metric) => {
     const isExpanded = state.productsBreakdownOpen && metric.dataset.breakdownMode === state.breakdownMode;
     metric.setAttribute("aria-expanded", String(isExpanded));
     metric.classList.toggle("is-expanded", isExpanded);
   });
   document.body.classList.toggle("is-breakdown-open", state.productsBreakdownOpen);
   if (!state.productsBreakdownOpen) return;
+
+  if (state.breakdownMode === "seller") {
+    const sellerSales = periodSales.filter(
+      (sale) => sale.employee === bestSeller && sale.type !== "adjustment" && !isEmployeeDiscountedSale(sale),
+    );
+    const sellerDrinks = sellerSales.filter((sale) => sale.type === "drink").reduce((sum, sale) => sum + sale.quantity, 0);
+    const sellerDesserts = sellerSales.filter((sale) => sale.type === "dessert").reduce((sum, sale) => sum + sale.quantity, 0);
+    els.soldBreakdownTitle.textContent = bestSeller === "—" ? "TOP" : `TOP · ${bestSeller}`;
+    els.soldBreakdownFirstTitle.textContent = `Напої · ${sellerDrinks} шт.`;
+    els.soldBreakdownSecondTitle.textContent = `Десерти · ${sellerDesserts} шт.`;
+    renderBreakdownList(els.soldBreakdownFirstList, groupedProductSales(sellerSales, "drink"));
+    renderBreakdownList(els.soldBreakdownSecondList, groupedProductSales(sellerSales, "dessert"));
+    return;
+  }
 
   if (state.breakdownMode === "cash" || state.breakdownMode === "card") {
     const paymentSales = periodSales.filter((sale) => sale.payment === state.breakdownMode);
@@ -1349,11 +1648,17 @@ function renderChart() {
   els.salesChart.innerHTML = points
     .map(
       (point) => `
-        <div class="chart-bar">
-          <p class="chart-value">${money.format(point.total)}</p>
+        <button
+          class="chart-bar${point.isActive ? " is-active" : ""}"
+          type="button"
+          data-sales-date="${point.date}"
+          aria-label="Обрати ${point.fullLabel}"
+          aria-pressed="${point.isActive ? "true" : "false"}"
+        >
+          <p class="chart-value">${money.format(roundMoneyValue(point.total))}</p>
           <div class="chart-fill" style="height: ${Math.max(12.5, (point.total / max) * 220)}px"></div>
           <p class="chart-label">${point.label}</p>
-        </div>
+        </button>
       `,
     )
     .join("");
@@ -1363,20 +1668,27 @@ function buildDayPoints() {
   return Array.from({ length: 7 }, (_, index) => {
     const date = new Date();
     date.setDate(date.getDate() - (6 - index));
-    const key = date.toDateString();
+    const dateValue = dateInputValue(date);
     return {
+      date: dateValue,
       label: date.toLocaleDateString("uk-UA", { weekday: "short" }),
-      total: state.sales.filter((sale) => new Date(sale.date).toDateString() === key).reduce((sum, sale) => sum + sale.total, 0),
+      fullLabel: date.toLocaleDateString("uk-UA", { day: "2-digit", month: "2-digit", year: "numeric" }),
+      isActive: dateValue === state.salesDate,
+      total: state.sales.filter((sale) => dateInputValue(sale.date) === dateValue).reduce((sum, sale) => sum + sale.total, 0),
     };
   });
 }
 
 function buildMonthPoints() {
   return Array.from({ length: 6 }, (_, index) => {
-    const date = new Date();
-    date.setMonth(date.getMonth() - (5 - index));
+    const today = new Date();
+    const date = new Date(today.getFullYear(), today.getMonth() - (5 - index), 1);
+    const monthValue = dateInputValue(date);
     return {
+      date: monthValue,
       label: date.toLocaleDateString("uk-UA", { month: "short" }),
+      fullLabel: date.toLocaleDateString("uk-UA", { month: "long", year: "numeric" }),
+      isActive: parseDateInput(state.salesDate).getMonth() === date.getMonth() && parseDateInput(state.salesDate).getFullYear() === date.getFullYear(),
       total: state.sales
         .filter((sale) => {
           const saleDate = new Date(sale.date);
@@ -1391,7 +1703,7 @@ function setSalesDate(value) {
   state.salesDate = value;
   state.salesCalendarMonth = monthStart(parseDateInput(value));
   closeSalesCalendar();
-  renderRecentSales();
+  renderStats();
 }
 
 function toggleSalesCalendar(forceOpen) {
@@ -1413,7 +1725,7 @@ function paymentLabel(payment) {
 }
 
 function renderSalesCalendar() {
-  els.salesDateValue.textContent = formatSalesDate(state.salesDate);
+  els.salesDateValue.textContent = formatSelectedPeriod(state.salesDate);
   els.salesCalendarTitle.textContent = state.salesCalendarMonth.toLocaleDateString("uk-UA", {
     month: "long",
     year: "numeric",
@@ -1451,11 +1763,15 @@ function renderRecentSales() {
   }
 
   const isMobile = window.matchMedia("(max-width: 640px)").matches;
-  const visibleSales = state.sales.filter((sale) => dateInputValue(sale.date) === state.salesDate);
+  const visibleSales = salesForSelectedPeriod();
 
   if (!visibleSales.length) {
     const selectedDate = new Date(`${state.salesDate}T00:00:00`);
-    els.recentSales.innerHTML = `<p class="card-text">За ${selectedDate.toLocaleDateString("uk-UA", { day: "2-digit", month: "2-digit", year: "numeric" })} продажів немає.</p>`;
+    const selectedPeriodLabel = selectedDate.toLocaleDateString(
+      "uk-UA",
+      state.period === "months" ? { month: "long", year: "numeric" } : { day: "2-digit", month: "2-digit", year: "numeric" },
+    );
+    els.recentSales.innerHTML = `<p class="card-text">За ${selectedPeriodLabel} продажів немає.</p>`;
     return;
   }
 
@@ -1463,7 +1779,7 @@ function renderRecentSales() {
     .map(
       (sale) => `
         <div
-          class="sale-row"
+          class="sale-row${isStatsViewer() ? " sale-row--readonly" : ""}"
           ${isMobile ? `data-sale-toggle role="button" tabindex="0" aria-expanded="false" aria-controls="sale-details-${sale.id}"` : ""}
         >
           <div class="sale-product">
@@ -1478,8 +1794,8 @@ function renderRecentSales() {
           <p class="price-label sale-employee">${sale.employee || "—"}</p>
           <p class="price-label sale-order">${sale.type === "adjustment" ? sale.orderNumber || "—" : "—"}</p>
           <p class="price-label sale-quantity">${sale.quantity} шт.</p>
-          <p class="product-price sale-total">${money.format(sale.total)}</p>
-          <button class="sale-delete" type="button" data-delete="${sale.id}" aria-label="Видалити продаж" title="Видалити"></button>
+          <p class="product-price sale-total">${money.format(roundMoneyValue(sale.total))}</p>
+          ${isStatsViewer() ? "" : `<button class="sale-delete" type="button" data-delete="${sale.id}" aria-label="Видалити продаж" title="Видалити"></button>`}
           <div class="sale-details" id="sale-details-${sale.id}">
             <div class="sale-detail">
               <span class="sale-detail-label">Операція</span>
@@ -1541,8 +1857,8 @@ els.cityLogin.addEventListener("submit", async (event) => {
   els.cityLoginError.textContent = "";
 
   try {
-    const cityId = await authenticateCity(pendingCityId, els.cityPassword.value);
-    await selectCity(cityId);
+    const session = await authenticateCity(pendingCityId, els.cityPassword.value);
+    await selectCity(session.city);
   } catch (error) {
     els.cityLoginError.textContent = error.message;
     els.cityPassword.select();
@@ -1574,17 +1890,26 @@ els.productGrid.addEventListener("click", (event) => {
   openOrder(product);
 });
 
-document.querySelector("#closeDialog").addEventListener("click", () => els.orderDialog.close());
-document.querySelector("#closeTopUpDialog").addEventListener("click", () => els.topUpDialog.close());
-els.addMoreItems.addEventListener("click", () => els.orderDialog.close());
+document.querySelector("#closeDialog").addEventListener("click", () => closeDialogSafely(els.orderDialog, resetOrderDialogUi));
+document.querySelector("#closeTopUpDialog").addEventListener("click", () => closeDialogSafely(els.topUpDialog, resetTopUpDialogUi));
+els.addMoreItems.addEventListener("click", () => closeDialogSafely(els.orderDialog, resetOrderDialogUi));
+els.addMoreItems.addEventListener("click", resetOrderDialogUi);
 els.cancelOrder.addEventListener("click", () => {
   resetDraftOrder();
-  els.orderDialog.close();
+  closeDialogSafely(els.orderDialog, resetOrderDialogUi);
 });
 
 [els.orderDialog, els.topUpDialog].forEach((dialog) => {
   dialog.addEventListener("click", (event) => {
-    if (event.target === dialog) dialog.close();
+    if (event.target === dialog) {
+      closeDialogSafely(dialog, dialog === els.orderDialog ? resetOrderDialogUi : resetTopUpDialogUi);
+    }
+  });
+  dialog.addEventListener("close", () => {
+    closeDiscountTooltip();
+    if (dialog === els.orderDialog) resetOrderDialogUi();
+    if (dialog === els.topUpDialog) resetTopUpDialogUi();
+    resetDialogState(dialog);
   });
 });
 
@@ -1609,11 +1934,111 @@ els.cashInput.addEventListener("input", renderOrder);
 
 els.employeeDiscount.addEventListener("change", () => {
   state.employeeDiscount = els.employeeDiscount.checked;
+  if (state.employeeDiscount) state.freeDiscount = false;
+  els.freeDiscount.checked = state.freeDiscount;
   renderOrder();
 });
 
+els.freeDiscount.addEventListener("change", () => {
+  state.freeDiscount = els.freeDiscount.checked;
+  if (state.freeDiscount) state.employeeDiscount = false;
+  els.employeeDiscount.checked = state.employeeDiscount;
+  renderOrder();
+});
+
+els.discountTooltipTrigger?.addEventListener("click", (event) => {
+  event.stopPropagation();
+  toggleDiscountTooltip();
+});
+
+document.addEventListener("click", (event) => {
+  if (!els.discountTooltip?.contains(event.target)) closeDiscountTooltip();
+});
+
+function enableMetricTouchPeek() {
+  document.querySelectorAll(".metric-card").forEach((card) => {
+    let pressTimer = 0;
+    let pointerId = null;
+    let startX = 0;
+    let startY = 0;
+    let isPeeking = false;
+    let suppressNextClick = false;
+
+    const clearPressTimer = () => {
+      if (!pressTimer) return;
+      window.clearTimeout(pressTimer);
+      pressTimer = 0;
+    };
+
+    const finishPress = (event) => {
+      if (pointerId === null || (event.pointerId !== undefined && event.pointerId !== pointerId)) return;
+      const shouldSuppressClick = isPeeking && event.type === "pointerup";
+      clearPressTimer();
+      card.classList.remove("is-touch-peek");
+      pointerId = null;
+      isPeeking = false;
+
+      if (shouldSuppressClick) {
+        suppressNextClick = true;
+        window.setTimeout(() => {
+          suppressNextClick = false;
+        }, 400);
+      }
+    };
+
+    card.addEventListener(
+      "pointerdown",
+      (event) => {
+        if (!event.isPrimary || (event.pointerType !== "touch" && event.pointerType !== "pen")) return;
+        clearPressTimer();
+        pointerId = event.pointerId;
+        startX = event.clientX;
+        startY = event.clientY;
+        pressTimer = window.setTimeout(() => {
+          pressTimer = 0;
+          isPeeking = true;
+          card.classList.add("is-touch-peek");
+        }, 320);
+      },
+      { passive: true },
+    );
+
+    card.addEventListener(
+      "pointermove",
+      (event) => {
+        if (event.pointerId !== pointerId || isPeeking) return;
+        if (Math.hypot(event.clientX - startX, event.clientY - startY) > 10) finishPress(event);
+      },
+      { passive: true },
+    );
+
+    card.addEventListener("pointerup", finishPress);
+    card.addEventListener("pointercancel", finishPress);
+    card.addEventListener("pointerleave", finishPress);
+    card.addEventListener("contextmenu", (event) => {
+      if (pointerId !== null || isPeeking) event.preventDefault();
+    });
+    card.addEventListener(
+      "click",
+      (event) => {
+        if (!suppressNextClick) return;
+        suppressNextClick = false;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      },
+      true,
+    );
+  });
+}
+
+enableMetricTouchPeek();
+
 els.productsSoldMetric.addEventListener("click", () => {
   openProductsBreakdown("products");
+});
+
+els.bestSellerMetric.addEventListener("click", () => {
+  openProductsBreakdown("seller");
 });
 
 els.cashRevenueMetric.addEventListener("click", () => {
@@ -1652,13 +2077,19 @@ els.salesCalendarGrid.addEventListener("click", (event) => {
   setSalesDate(dayButton.dataset.salesDate);
 });
 
+els.salesChart.addEventListener("click", (event) => {
+  const chartButton = event.target.closest("[data-sales-date]");
+  if (!chartButton) return;
+  setSalesDate(chartButton.dataset.salesDate);
+});
+
 els.draftItems.addEventListener("click", (event) => {
   const removeButton = event.target.closest("[data-remove-item]");
   if (removeButton) {
     state.draftOrder = state.draftOrder.filter((item) => item.id !== removeButton.dataset.removeItem);
     if (!draftLineCount()) {
       resetDraftOrder();
-      els.orderDialog.close();
+      closeDialogSafely(els.orderDialog, resetOrderDialogUi);
       return;
     }
     renderOrder();
@@ -1682,7 +2113,7 @@ els.draftItems.addEventListener("click", (event) => {
 
   if (!draftLineCount()) {
     resetDraftOrder();
-    els.orderDialog.close();
+    closeDialogSafely(els.orderDialog, resetOrderDialogUi);
     return;
   }
 
@@ -1754,8 +2185,12 @@ els.topUpAmount.addEventListener("input", () => {
 });
 
 document.querySelectorAll(".app-view").forEach((button) => {
-  button.addEventListener("click", () => {
-    switchView(button.dataset.view);
+  button.addEventListener("click", async () => {
+    if (isStatsViewer()) {
+      await selectCity(button.dataset.viewerCity, { minimumLoaderTime: 0 });
+    } else {
+      switchView(button.dataset.view);
+    }
     document.querySelectorAll(".app-menu").forEach((menu) => {
       menu.classList.remove("is-open");
       menu.closest(".sales-sticky, .stats-sticky")?.classList.remove("is-menu-open");
@@ -1780,7 +2215,11 @@ document.querySelectorAll(".mobile-menu-toggle").forEach((toggle) => {
 document.querySelectorAll(".period-button").forEach((button) => {
     button.addEventListener("click", () => {
       state.period = button.dataset.period;
-      document.querySelectorAll(".period-button").forEach((item) => item.classList.toggle("is-active", item === button));
+      document.querySelectorAll(".period-button").forEach((item) => {
+        const isActive = item === button;
+        item.classList.toggle("is-active", isActive);
+        item.setAttribute("aria-pressed", String(isActive));
+      });
       renderStats();
     });
 });
@@ -1824,8 +2263,13 @@ els.recentSales.addEventListener("keydown", (event) => {
 
 if (initialCityId) {
   verifySession(initialCityId)
-    .then((isValid) => {
-      if (isValid) return selectCity(initialCityId, { persist: false, minimumLoaderTime: 2500 });
+    .then((session) => {
+      if (session) {
+        sessionRole = session.role;
+        state.role = sessionRole;
+        localStorage.setItem(ROLE_STORAGE_KEY, sessionRole);
+        return selectCity(initialCityId, { persist: false, minimumLoaderTime: 2500 });
+      }
       showCitySelection();
     })
     .catch(showCitySelection);

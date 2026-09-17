@@ -1,4 +1,4 @@
-const { createSessionToken, getRequestSession, isValidPassword } = require("../lib/auth");
+const { createSessionToken, getCredentialsRole, getRequestSession } = require("../lib/auth");
 
 function sendJson(response, statusCode, payload) {
   response.statusCode = statusCode;
@@ -19,15 +19,16 @@ module.exports = async (request, response) => {
   if (request.method === "GET") {
     const session = getRequestSession(request);
     if (!session) return sendJson(response, 401, { error: "Сесія завершена" });
-    return sendJson(response, 200, { ok: true, city: session.city });
+    return sendJson(response, 200, { ok: true, city: session.city, role: session.role });
   }
 
   if (request.method !== "POST") return sendJson(response, 405, { error: "Метод не підтримується" });
 
   const { city, password } = request.body || {};
-  if (!city || !["kharkiv", "lutsk"].includes(city) || !isValidPassword(city, password)) {
+  const role = getCredentialsRole(city, password);
+  if (!city || !["kharkiv", "lutsk"].includes(city) || !role) {
     return sendJson(response, 401, { error: "Невірний пароль" });
   }
 
-  return sendJson(response, 200, { ok: true, city, token: createSessionToken(city) });
+  return sendJson(response, 200, { ok: true, city, role, token: createSessionToken(city, role) });
 };
