@@ -281,6 +281,30 @@ const categories = [
         image: "IMG/PannaCottaMangoPassion.webp",
       },
       {
+        id: "cakebox-tropic",
+        name: "CakeBox",
+        price: 180,
+        group: "cakebox",
+        badge: "Тропік",
+        image: "IMG/CakeBoxTropic.webp",
+      },
+      {
+        id: "cakebox-twix",
+        name: "CakeBox",
+        price: 180,
+        group: "cakebox",
+        badge: "Твікс",
+        image: "IMG/CakeBoxTwix.webp",
+      },
+      {
+        id: "cakebox-biscotti",
+        name: "CakeBox",
+        price: 180,
+        group: "cakebox",
+        badge: "Біскоті",
+        image: "IMG/CakeBoxBiscotti.webp",
+      },
+      {
         id: "honey-cake",
         name: "Медовик",
         price: 110,
@@ -550,7 +574,7 @@ function readLocalSales() {
 
 const salesByCity = readLocalSales();
 
-const ASSET_VERSION = "20260917-1";
+const ASSET_VERSION = "20260918-1";
 
 function versionedAssetUrl(path) {
   if (/^https?:\/\//.test(path)) return path;
