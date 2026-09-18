@@ -349,7 +349,7 @@ const categories = [
       {
         id: "bento-cake-standard",
         name: "Бенто торт",
-        price: 650,
+        price: 700,
         group: "bento-cake",
         badge: "Стандарт",
         image: "IMG/BentoCakeStandard.webp",
@@ -357,7 +357,7 @@ const categories = [
       {
         id: "bento-cake-xl",
         name: "Бенто торт",
-        price: 980,
+        price: 1030,
         group: "bento-cake",
         badge: "XL",
         image: "IMG/BentoCakeXL.webp",
@@ -371,7 +371,7 @@ const categories = [
       {
         id: "mousse-torte",
         name: "Мусовий торт",
-        price: 650,
+        price: 700,
         image: "IMG/MousseTorte.webp",
       },
       {
@@ -574,7 +574,7 @@ function readLocalSales() {
 
 const salesByCity = readLocalSales();
 
-const ASSET_VERSION = "20260918-1";
+const ASSET_VERSION = "20260918-2";
 
 function versionedAssetUrl(path) {
   if (/^https?:\/\//.test(path)) return path;
