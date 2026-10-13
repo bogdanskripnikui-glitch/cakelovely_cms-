@@ -74,9 +74,20 @@ module.exports = async (request, response) => {
       if (!canReadCity(session, city)) return sendJson(response, 403, { error: "Немає доступу до цієї філії" });
 
       const supabase = getSupabaseClient();
-      const { data, error } = await supabase.from(getCheckoutTable()).select("*").eq("city", city).order("sold_at", { ascending: false });
-      if (error) return sendJson(response, 500, { error: error.message });
-      return sendJson(response, 200, { ok: true, sales: (data || []).map(serializeSale) });
+      const sales = [];
+      let lastId;
+      while (true) {
+        let query = supabase.from(getCheckoutTable()).select("*").eq("city", city)
+          .order("id", { ascending: true }).limit(500);
+        if (lastId !== undefined) query = query.gt("id", lastId);
+        const { data, error } = await query;
+        if (error) return sendJson(response, 500, { error: error.message });
+        if (!data?.length) break;
+        sales.push(...data.map(serializeSale));
+        lastId = data[data.length - 1].id;
+      }
+      sales.sort((a, b) => new Date(b.date) - new Date(a.date));
+      return sendJson(response, 200, { ok: true, sales });
     } catch (error) {
       return sendJson(response, 500, { error: error.message || "Не вдалося завантажити продажі" });
     }
