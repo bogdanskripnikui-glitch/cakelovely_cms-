@@ -105,13 +105,13 @@ const categories = [
       {
         id: "pumpkin-latte",
         name: "Гарбузовий лате",
-        price: 90,
+        price: 110,
         image: "IMG/PumpkinLatte.webp",
       },
       {
         id: "mochaccino",
         name: "Мокочіно",
-        price: 90,
+        price: 110,
         image: "IMG/Mochaccino.webp",
       },
       {
@@ -139,7 +139,7 @@ const categories = [
       {
         id: "hazelnut-cocoa",
         name: "Горіхове какао",
-        price: 90,
+        price: 110,
         image: "IMG/HazelnutCocoa.webp",
       },
       {
