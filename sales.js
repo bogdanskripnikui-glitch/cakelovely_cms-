@@ -205,7 +205,13 @@ const categories = [
       {
         id: "trifle",
         name: "Трайфли",
-        price: 110,
+        price: 120,
+        image: "IMG/Trifle.webp",
+      },
+      {
+        id: "festive-trifle",
+        name: "Святковий трайфл",
+        price: 120,
         image: "IMG/Trifle.webp",
       },
       {
