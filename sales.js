@@ -212,7 +212,7 @@ const categories = [
         id: "festive-trifle",
         name: "Святковий трайфл",
         price: 120,
-        image: "IMG/Trifle.webp",
+        image: "IMG/FestiveTrifle.png",
       },
       {
         id: "tiramisu-classic",
