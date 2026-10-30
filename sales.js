@@ -205,7 +205,7 @@ const categories = [
       {
         id: "trifle",
         name: "Трайфли",
-        price: 120,
+        price: 110,
         image: "IMG/Trifle.webp",
       },
       {
