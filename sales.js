@@ -415,7 +415,7 @@ const categories = [
       {
         id: "festive-cupcake",
         name: "Святковий капкейк",
-        price: 110,
+        price: 120,
         image: "IMG/FestiveCupcake.webp",
       },
     ],
