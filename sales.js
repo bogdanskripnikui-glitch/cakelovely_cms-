@@ -421,6 +421,27 @@ const categories = [
     ],
   },
   {
+    id: "sandwiches",
+    name: "Сендвічі",
+    icon: "sandwich",
+    type: "other",
+    cities: ["kharkiv"],
+    items: [
+      {
+        id: "sandwich-chicken",
+        name: "Сендвіч з куркою",
+        price: 200,
+        image: "IMG/SandwichChicken.jpg",
+      },
+      {
+        id: "sandwich-ham",
+        name: "Сендвіч з шинкою",
+        price: 200,
+        image: "IMG/SandwichHam.jpg",
+      },
+    ],
+  },
+  {
     id: "other",
     name: "Інше",
     icon: "spoon",
@@ -528,7 +549,7 @@ const cities = {
   kharkiv: {
     id: "kharkiv",
     name: "Харків",
-    employees: ["Даша", "Настя", "Соня", "Катя", "Тетяна", "Арина"],
+    employees: ["Даша", "Настя", "Соня", "Катя", "Тетяна", "Арина", "Ангелина"],
   },
   lutsk: {
     id: "lutsk",
@@ -1188,6 +1209,16 @@ function currentCategory() {
 }
 
 function categoryIcon(kind) {
+  if (kind === "sandwich") {
+    return `
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M4 10.5 10.6 5a2.2 2.2 0 0 1 2.8 0l6.6 5.5" />
+        <path d="M4 10.5h16v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" />
+        <path d="M4 14h16M7 11l2 3m6-3-2 3m4 0 1-2" />
+      </svg>
+    `;
+  }
+
   if (kind === "spoon") {
     return `
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -1241,6 +1272,7 @@ function categoryIcon(kind) {
 
 function renderCategories() {
   els.categoryTabs.innerHTML = categories
+    .filter((category) => !category.cities || category.cities.includes(state.cityId))
     .map(
       (category) => `
         <button class="category-card category-button ${category.id === state.categoryId ? "is-active" : ""}" type="button" data-category="${category.id}">
